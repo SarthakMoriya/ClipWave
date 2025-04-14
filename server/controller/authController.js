@@ -19,7 +19,7 @@ const signup = async (req, res) => {
     // Create user
     const userId = await User.create(email, hashedPassword);
 
-    res.status(201).json({ message: 'User created successfully', userId });
+    res.status(201).json({ message: 'User created successfully', code:200, userId });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
@@ -45,7 +45,7 @@ const login = async (req, res) => {
     // Generate token
     const token = generateToken(user.id);
 
-    res.json({ message: 'Login successful', token });
+    res.json({ message: 'Login successful',code:200, token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

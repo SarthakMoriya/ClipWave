@@ -1,12 +1,23 @@
-import { StyleSheet,  TouchableOpacity, View } from "react-native";
-import React, { useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
 import { Divider, Layout, Text } from "@ui-kitten/components";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import Feather from "@expo/vector-icons/Feather";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const HomeScreen = () => {
   const [openSideBar, setOpenSideBar] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = await AsyncStorage.getItem("token");
+      console.log(token)
+    };
+    fetchUser();
+  }, []);
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
