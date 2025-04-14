@@ -79,10 +79,28 @@ root/
 ├── .gitignore
 └── README.md
 
+## Setup Instructions
+
+### Environment Configuration
+
+Before running the application, you'll need to set up environment variables. If you don't have a `.env` file already, create one by following these steps:
+
+1. **Copy the `.env.example` file:**
+
+   To create your own `.env` file with the required configuration, run:
+
+   ```bash
+   cp .env.example .env
+
+2. **Replace IP with your Wifi/Network's IPv4 Address** 
+    - desktop>index.js>()
+    - client-mobile > SocketHandler.js
+
+
 ## Run on Device
-cd client-mobile > npm i > npm run start // for android ios 
-cd server > npm i >node server.js // starts backend server + socket
-cd desktop > npm i > npm run start // start electron
+ - **React Native** cd client-mobile > npm i > npm run start // for android ios 
+ - **NodeJs** cd server > npm i >node server.js // starts backend server + socket
+ - **ElectronJs**  cd desktop > npm i > npm run start // start electron
 
 ## ⚠️ Known Issues
 On Android, image display is pending
