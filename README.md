@@ -1,1 +1,1 @@
-# Clipit
+# ClipIt
