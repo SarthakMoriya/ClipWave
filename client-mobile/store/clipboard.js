@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
   log: [],
+  type:1
 }
 
 export const logSlice = createSlice({
@@ -16,11 +17,15 @@ export const logSlice = createSlice({
     },
     removeLog: (state,payload) => {
       state.log = state.log.filter(log => log.id !== payload)
+    },
+    setType:(state,{payload})=>{
+      state.type = payload
+      console.log(state.type)
     }
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { addLog,removeLog } = logSlice.actions
+export const { addLog,removeLog,setType } = logSlice.actions
 
 export default logSlice.reducer

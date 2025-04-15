@@ -15,7 +15,7 @@ const LoginScreen = ({ navigation }) => {
 
       try {
         const response = await fetch(
-          "http://192.168.29.22:3000/api/auth/login",
+          "http://192.168.1.16:3000/api/auth/login",
           {
             method: "POST",
             headers: {

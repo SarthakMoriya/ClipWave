@@ -11,7 +11,7 @@ const SocketManager = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    socket = io("http://192.168.29.22:3000");
+    socket = io("http://192.168.1.16:3000");
 
     socket.on("connect", () => {
       console.log("Connected to Socket");
