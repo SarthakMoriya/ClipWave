@@ -8,10 +8,11 @@ try {
 
   let socket;
   let previousClipboardContent = "";
-  let previousImg='';
+  let previousImg = "";
 
   establishSocketConnection = () => {
-    socket = io("http://192.168.29.22:3000");
+    socket = io("http://192.168.1.16:3000");
+    // "https://192.168.1.16:3000"
 
     socket.on("connect", () => {
       console.log("Connected to Socket");
@@ -28,12 +29,17 @@ try {
   };
 
   checkClipBoard = () => {
-    const clipboardContent = clipboard.readText();
+    const clipboardContent = clipboard.readText(); 
     if (clipboardContent !== previousClipboardContent) {
-      socket.emit("clipboard", clipboardContent);
+      // Check if the clipboard content is a URL
+      if (checkForUrls(clipboardContent)) {
+        console.log("Emitting URLS")
+        socket.emit("clipboard-url", clipboardContent);        
+      } else {
+        console.log("EMITTING DATA....")
+        socket.emit("clipboard", clipboardContent);
+      }
       previousClipboardContent = clipboardContent;
-      console.log("CurrClipborad is" + clipboardContent);
-      console.log("Previous Clipborad is" + previousClipboardContent);
     } else {
       checkImage();
     }
@@ -42,19 +48,16 @@ try {
   let previousImgBase64 = null; // Store base64 of the previous image
 
   const checkImage = () => {
-    console.log("I am being called");
-  
     // Read the image from the clipboard
     const currentImage = clipboard.readImage();
-  
+
     if (!currentImage.isEmpty()) {
       const base64Image = currentImage.toDataURL(); // Convert the image to base64 format
-  
+
       // Check if the image is different from the previous one
       if (previousImgBase64 !== base64Image) {
         socket.emit("clipboard-img", base64Image); // Emit the base64 image
-        console.log(base64Image); // For debugging
-  
+
         // Store the base64 string for comparison on next calls
         previousImgBase64 = base64Image;
       } else {
@@ -64,7 +67,16 @@ try {
       console.log("Clipboard is empty or no image detected.");
     }
   };
-  
 } catch (error) {
   console.log(error);
 }
+
+const checkForUrls = (data) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g; // Regex to match URLs
+  const urls = data.match(urlRegex);
+  if (urls) {
+    return true;
+  } else {
+    return false;
+  }
+};

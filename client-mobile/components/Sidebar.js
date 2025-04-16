@@ -1,8 +1,17 @@
 import React from "react";
-import { StyleSheet } from "react-native";
-import { Layout, Text, List, ListItem, Icon } from "@ui-kitten/components";
+import { StyleSheet, TouchableOpacity } from "react-native";
+import {
+  Layout,
+  Text,
+  List,
+  ListItem,
+  Icon,
+  Divider,
+  Button,
+} from "@ui-kitten/components";
 import { useDispatch } from "react-redux";
 import { setType } from "../store/clipboard";
+import { closeNav } from "../store/states";
 
 const data = [
   { title: "Text", icon: "file-outline", type: 1 },
@@ -15,14 +24,20 @@ const data = [
 const Sidebar = () => {
   const dispatch = useDispatch();
   const renderItem = ({ item }) => (
-    <ListItem
-      title={item.title}
-      accessoryLeft={(props) => <Icon {...props} name={item.icon} />}
-      onPress={() => {
-        dispatch(setType(item.type));
-      }}
-    />
+    <>
+      <ListItem
+        title={item.title}
+        accessoryLeft={(props) => <Icon {...props} name={item.icon} />}
+        onPress={() => {
+          dispatch(setType(item.type));
+          dispatch(closeNav())
+        }}
+      />
+      <Divider />
+    </>
   );
+
+  const onClose = () => {};
 
   return (
     <Layout style={styles.container}>
@@ -42,6 +57,13 @@ const styles = StyleSheet.create({
     paddingVertical: 30,
     paddingHorizontal: 16,
     backgroundColor: "white",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    zIndex: 100,
+    height: "100%",
+    borderWidth: 2,
+    borderColor: "#eaeaea",
   },
   title: {
     marginBottom: 16,
@@ -50,4 +72,12 @@ const styles = StyleSheet.create({
   list: {
     backgroundColor: "transparent",
   },
+  closeIcon: {
+    width: 24,
+    height: 24,
+  },
+  closeNav:{
+    position: "absolute",
+    top:0,
+  }
 });

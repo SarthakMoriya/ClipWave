@@ -25,13 +25,17 @@ const SocketManager = () => {
       console.log("COPIED IMAGE RECEIVED", data);
       dispatch(addLog({payload:data,type:2}));
     });
+    socket.on("clipboard-url", (data) => {
+      console.log("COPIED URL RECEIVED", data);
+      dispatch(addLog({payload:data,type:3}));
+    });
 
-    const checkClipBoard = async () => {
-      const clipboardContent = await Clipboard.getStringAsync();
-      if (clipboardContent) {
-        socket.emit("clipboard", clipboardContent);
-      }
-    };
+    // const checkClipBoard = async () => {
+    //   const clipboardContent = await Clipboard.getStringAsync();
+    //   if (clipboardContent) {
+    //     socket.emit("clipboard", clipboardContent);
+    //   }
+    // };
 
     const interval = setInterval(() => {
       // checkClipBoard();

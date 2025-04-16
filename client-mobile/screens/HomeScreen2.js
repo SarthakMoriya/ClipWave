@@ -21,30 +21,24 @@ import {
 } from "@ui-kitten/components";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import Sidebar from "../components/Sidebar";
+import { closeNav, openNav } from "../store/states";
 
 const HomeScreen2 = () => {
   const [user, setUser] = useState(null);
-  const [isOpen, setIsOpen] = useState(false)
+  const dispatch = useDispatch();
   const logs = useSelector((state) => state.log.log);
   const type = useSelector((state) => state.log.type);
-
-  const clipboardData = [
-    { id: "1", content: "Copied link: https://github.com" },
-    { id: "2", content: "Copied OTP: 123456" },
-    { id: "3", content: "Copied email: user@example.com" },
-    { id: "4", content: "Copied address: 221B Baker Street" },
-  ];
+  const isOpen = useSelector((state) => state.extra.isnavOpen);
 
   useEffect(() => {
     const fetchToken = async () => {
       const token = await AsyncStorage.getItem("token");
       setUser(token);
-      console.log(logs);
-      console.log(type)
+      console.log(isOpen)
     };
     fetchToken();
   }, []);
@@ -59,10 +53,11 @@ const HomeScreen2 = () => {
       }}
     >
       {item.type == 1 && <Text category="s1">{item.content}</Text>}
+      {item.type == 3 && <Text category="s1">{item.content}</Text>}
       {item.type == 2 && (
         <Image
           source={{ uri: item.content }}
-          style={{ width: 200, height: 200 }}
+          style={{ width: "100%", height: 200, resizeMode: "contain" }}
         />
       )}
       {item.type == 2 && (
@@ -76,7 +71,9 @@ const HomeScreen2 = () => {
 
   const BackAction = () => (
     <TopNavigationAction
-      onPress={()=>{setIsOpen(prev=>(!prev))}}
+      onPress={() => {
+        isOpen ? dispatch(closeNav()) : dispatch(openNav());
+      }}
       icon={(props) => <Icon {...props} name="menu-outline" />}
     />
   );
@@ -118,19 +115,20 @@ const HomeScreen2 = () => {
     <SafeAreaView style={{ flex: 1 }}>
       <Layout style={styles.container}>
         {/* <Sidebar /> */}
-        {isOpen && <Sidebar/>}
-        {isOpen}
+        {isOpen && <Sidebar />}
         <TopNavigation
           alignment="center"
           title="My Clipboard"
           accessoryLeft={BackAction}
         />
         <Divider />
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <ScrollView contentContainerStyle={styles.scrollContainer} >
           <Text category="h6" style={styles.subHeading}>
             Welcome back! {isOpen}
           </Text>
-          {logs.map((item, i) => type==item.type && renderClipboardCard(item, i))}
+          {logs.map(
+            (item, i) => type == item.type && renderClipboardCard(item, i)
+          )}
         </ScrollView>
       </Layout>
     </SafeAreaView>
@@ -141,6 +139,7 @@ export default HomeScreen2;
 
 const styles = StyleSheet.create({
   container: {
+    position: "relative",
     flex: 1,
   },
   scrollContainer: {
