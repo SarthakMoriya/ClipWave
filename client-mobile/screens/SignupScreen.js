@@ -1,99 +1,104 @@
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { Layout, Input, Button, Text } from "@ui-kitten/components";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Text,
+  TextInput,
+  Button,
+  Alert,
+} from "react-native";
 
 const SignupScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Handle signup logic
   const onSignupPress = async () => {
     if (email && password && confirmPassword) {
       if (password === confirmPassword) {
-        // Simulate signup success
-        console.log("Signed Up with email:", email);
-        
+        console.log("Signing up with email:", email);
+
         try {
           const response = await fetch("http://192.168.29.22:3000/api/auth/signup", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json", // Set the content type
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email, password }), // Use JSON.stringify() to convert object to string
+            body: JSON.stringify({ email, password }),
           });
-  
+
           if (!response.ok) {
-            // If response is not successful (e.g., 404, 500)
-            const errorText = await response.text(); // Read as plain text to log or handle
-            console.log('Error Response:', errorText);
+            const errorText = await response.text();
+            console.log("Error Response:", errorText);
+            Alert.alert("Signup Failed", errorText || "Server error.");
             return;
           }
-  
-          // Try to parse JSON response
+
           const data = await response.json();
-          console.log('Signup successful:', data);
-  
-          // Navigate to Home or handle further logic after successful signup
-          // navigation.navigate("Home"); // Uncomment this if you want to navigate
-  
+          console.log("Signup successful:", data);
+          Alert.alert("Success", "Account created successfully!");
+
+          // navigation.navigate("Home"); // Uncomment if needed
         } catch (err) {
-          // Handle errors that are not related to the response format
-          console.log('Error:', err);
+          console.log("Error:", err);
+          Alert.alert("Error", "Something went wrong.");
         }
       } else {
-        console.log("Passwords do not match");
+        Alert.alert("Error", "Passwords do not match");
       }
     } else {
-      console.log("Please fill in all fields");
+      Alert.alert("Error", "Please fill in all fields");
     }
   };
-  
-  
+
   return (
-    <Layout style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text category="h1" style={styles.title}>
-          Sign Up
-        </Text>
+        <Text style={styles.title}>Sign Up</Text>
       </View>
+
       <View style={styles.formContainer}>
-        <Input
+        <Text style={styles.label}>Email</Text>
+        <TextInput
           value={email}
-          label="Email"
-          placeholder="Enter your email"
           onChangeText={setEmail}
+          placeholder="Enter your email"
           keyboardType="email-address"
           style={styles.input}
         />
-        <Input
+
+        <Text style={styles.label}>Password</Text>
+        <TextInput
           value={password}
-          label="Password"
-          placeholder="Enter your password"
           onChangeText={setPassword}
+          placeholder="Enter your password"
           secureTextEntry
           style={styles.input}
         />
-        <Input
+
+        <Text style={styles.label}>Confirm Password</Text>
+        <TextInput
           value={confirmPassword}
-          label="Confirm Password"
-          placeholder="Confirm your password"
           onChangeText={setConfirmPassword}
+          placeholder="Confirm your password"
           secureTextEntry
           style={styles.input}
         />
-        <Button onPress={onSignupPress} style={styles.button}>
-          Sign Up
-        </Button>
+
+        <Button title="Sign Up" onPress={onSignupPress} color="#3366FF" />
       </View>
+
       <View style={styles.footer}>
         <TouchableOpacity onPress={() => navigation.navigate("Login")}>
           <Text style={styles.footerText}>Already have an account? Login</Text>
         </TouchableOpacity>
       </View>
-    </Layout>
+    </View>
   );
 };
+
+export default SignupScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -107,6 +112,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   title: {
+    fontSize: 28,
     fontWeight: "bold",
     color: "#333",
   },
@@ -114,12 +120,18 @@ const styles = StyleSheet.create({
     width: "100%",
     marginBottom: 20,
   },
-  input: {
-    marginBottom: 15,
+  label: {
+    marginBottom: 5,
+    fontWeight: "500",
+    color: "#555",
   },
-  button: {
-    marginTop: 20,
-    backgroundColor: "#3366FF",
+  input: {
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    marginBottom: 15,
   },
   footer: {
     alignItems: "center",
@@ -127,7 +139,6 @@ const styles = StyleSheet.create({
   },
   footerText: {
     color: "#007AFF",
+    fontSize: 16,
   },
 });
-
-export default SignupScreen;

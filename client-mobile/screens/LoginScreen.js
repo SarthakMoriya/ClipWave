@@ -1,47 +1,47 @@
 import React, { useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
-import { Layout, Input, Button, Text, Icon } from "@ui-kitten/components";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  TextInput,
+  Text,
+  Button,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("test@gmail.com");
   const [password, setPassword] = useState("test");
 
-  // Handle login logic
   const onLoginPress = async () => {
     if (email && password) {
-      // Simulate signup success
       console.log("Signed Up with email:", email);
 
       try {
         const response = await fetch(
-          "http://192.168.1.16:3000/api/auth/login",
+          "http://192.168.1.106:3000/api/auth/login",
           {
             method: "POST",
             headers: {
-              "Content-Type": "application/json", // Set the content type
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email, password }), // Use JSON.stringify() to convert object to string
+            body: JSON.stringify({ email, password }),
           }
         );
 
         if (!response.ok) {
-          // If response is not successful (e.g., 404, 500)
-          const errorText = await response.text(); // Read as plain text to log or handle
+          const errorText = await response.text();
           console.log("Error Response:", errorText);
           return;
         }
 
-        // Try to parse JSON response
         const data = await response.json();
         if (data.code === 200) {
           await AsyncStorage.setItem("token", data.token);
           console.log("Token:", data.token);
-
           navigation.navigate("Home");
         }
       } catch (err) {
-        // Handle errors that are not related to the response format
         console.log("Error:", err);
       }
     } else {
@@ -50,46 +50,43 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <Layout style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text category="h1" style={styles.title}>
-          Login
-        </Text>
+        <Text style={styles.title}>Login</Text>
       </View>
+
       <View style={styles.formContainer}>
-        <Input
+        <Text style={styles.label}>Email</Text>
+        <TextInput
           value={email}
-          label="Email"
           placeholder="Enter your email"
           onChangeText={setEmail}
           keyboardType="email-address"
           style={styles.input}
         />
-        <Input
+
+        <Text style={styles.label}>Password</Text>
+        <TextInput
           value={password}
-          label="Password"
           placeholder="Enter your password"
           onChangeText={setPassword}
           secureTextEntry
           style={styles.input}
         />
-        <Button onPress={onLoginPress} style={styles.button}>
-          Login
-        </Button>
+
+        <Button title="Login" onPress={onLoginPress} color="#3366FF" />
       </View>
+
       <View style={styles.footer}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("Signup");
-          }}
-        >
+        <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
           <Text style={styles.footerText}>Don't have an account? Sign up</Text>
         </TouchableOpacity>
       </View>
-    </Layout>
+    </View>
   );
 };
 
+export default LoginScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -102,6 +99,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   title: {
+    fontSize: 32,
     fontWeight: "bold",
     color: "#333",
   },
@@ -109,12 +107,18 @@ const styles = StyleSheet.create({
     width: "100%",
     marginBottom: 20,
   },
-  input: {
-    marginBottom: 15,
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: "#444",
   },
-  button: {
-    marginTop: 20,
-    backgroundColor: "#3366FF",
+  input: {
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    marginBottom: 15,
   },
   footer: {
     alignItems: "center",
@@ -122,7 +126,6 @@ const styles = StyleSheet.create({
   },
   footerText: {
     color: "#007AFF",
+    fontSize: 16,
   },
 });
-
-export default LoginScreen;

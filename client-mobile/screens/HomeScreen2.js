@@ -8,17 +8,9 @@ import {
   Image,
   Button,
   Alert,
+  Text,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import {
-  Layout,
-  Text,
-  Divider,
-  Card,
-  TopNavigation,
-  TopNavigationAction,
-  Icon,
-} from "@ui-kitten/components";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,6 +18,7 @@ import * as FileSystem from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 import Sidebar from "../components/Sidebar";
 import { closeNav, openNav } from "../store/states";
+import Icon from "react-native-vector-icons/Ionicons";
 
 const HomeScreen2 = () => {
   const [user, setUser] = useState(null);
@@ -38,44 +31,48 @@ const HomeScreen2 = () => {
     const fetchToken = async () => {
       const token = await AsyncStorage.getItem("token");
       setUser(token);
-      console.log(isOpen)
+      console.log(isOpen);
     };
     fetchToken();
   }, []);
 
   const renderClipboardCard = (item, i) => (
-    <Card
-      key={i}
-      style={styles.card}
-      onPress={async () => {
-        ToastAndroid.show("Copied to clipboard", ToastAndroid.SHORT);
-        await Clipboard.setStringAsync(item);
-      }}
-    >
-      {item.type == 1 && <Text category="s1">{item.content}</Text>}
-      {item.type == 3 && <Text category="s1">{item.content}</Text>}
-      {item.type == 2 && (
-        <Image
-          source={{ uri: item.content }}
-          style={{ width: "100%", height: 200, resizeMode: "contain" }}
-        />
-      )}
-      {item.type == 2 && (
+    <View key={i} style={styles.card}>
+      <TouchableOpacity
+        onPress={async () => {
+          ToastAndroid.show("Copied to clipboard", ToastAndroid.SHORT);
+          await Clipboard.setStringAsync(item.content);
+        }}
+        style={styles.cardTouchable}
+      >
+        {(item.type === 1 || item.type === 3) && (
+          <Text style={styles.cardText}>{item.content}</Text>
+        )}
+        {item.type === 2 && (
+          <Image
+            source={{ uri: item.content }}
+            style={{ width: "100%", height: 200, resizeMode: "contain" }}
+          />
+        )}
+      </TouchableOpacity>
+      {item.type === 2 && (
         <Button
           title="Download Image"
           onPress={() => saveBase64ToGallery(item.content)}
         />
       )}
-    </Card>
+    </View>
   );
 
   const BackAction = () => (
-    <TopNavigationAction
+    <TouchableOpacity
       onPress={() => {
         isOpen ? dispatch(closeNav()) : dispatch(openNav());
       }}
-      icon={(props) => <Icon {...props} name="menu-outline" />}
-    />
+      style={styles.backButton}
+    >
+      <Icon name="menu-outline" size={26} color="#000" />
+    </TouchableOpacity>
   );
 
   const saveBase64ToGallery = async (base64Data) => {
@@ -89,18 +86,13 @@ const HomeScreen2 = () => {
         return;
       }
 
-      // Strip the prefix from base64 data URI
       const base64 = base64Data.replace(/^data:image\/\w+;base64,/, "");
-
-      // Pick a file path
       const fileUri = FileSystem.documentDirectory + "downloadedImage.jpg";
 
-      // Write base64 data to file
       await FileSystem.writeAsStringAsync(fileUri, base64, {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      // Save file to gallery
       const asset = await MediaLibrary.createAssetAsync(fileUri);
       await MediaLibrary.createAlbumAsync("Download", asset, false);
 
@@ -113,24 +105,24 @@ const HomeScreen2 = () => {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Layout style={styles.container}>
-        {/* <Sidebar /> */}
+      <View style={styles.container}>
         {isOpen && <Sidebar />}
-        <TopNavigation
-          alignment="center"
-          title="My Clipboard"
-          accessoryLeft={BackAction}
-        />
-        <Divider />
-        <ScrollView contentContainerStyle={styles.scrollContainer} >
-          <Text category="h6" style={styles.subHeading}>
-            Welcome back! {isOpen}
+
+        <View style={styles.topBar}>
+          {BackAction()}
+          <Text style={styles.topBarTitle}>My Clipboard</Text>
+          <View style={{ width: 26 }} /> {/* Placeholder for symmetry */}
+        </View>
+
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <Text style={styles.subHeading}>
+            Welcome back!
           </Text>
           {logs.map(
-            (item, i) => type == item.type && renderClipboardCard(item, i)
+            (item, i) => type === item.type && renderClipboardCard(item, i)
           )}
         </ScrollView>
-      </Layout>
+      </View>
     </SafeAreaView>
   );
 };
@@ -139,16 +131,47 @@ export default HomeScreen2;
 
 const styles = StyleSheet.create({
   container: {
-    position: "relative",
     flex: 1,
+    backgroundColor: "#fff",
+  },
+  topBar: {
+    height: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    backgroundColor: "#f4f4f4",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  topBarTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  backButton: {
+    padding: 5,
   },
   scrollContainer: {
     padding: 16,
   },
   card: {
-    marginBottom: 12,
+    marginBottom: 16,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: "#f8f8f8",
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  cardTouchable: {
+    marginBottom: 8,
+  },
+  cardText: {
+    fontSize: 16,
+    color: "#333",
   },
   subHeading: {
     marginBottom: 12,
+    fontSize: 16,
+    fontWeight: "500",
   },
 });

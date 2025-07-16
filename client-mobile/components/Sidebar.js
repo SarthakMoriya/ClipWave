@@ -1,56 +1,59 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
 import {
-  Layout,
+  StyleSheet,
+  TouchableOpacity,
   Text,
-  List,
-  ListItem,
-  Icon,
-  Divider,
-  Button,
-} from "@ui-kitten/components";
+  View,
+  FlatList,
+} from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { useDispatch } from "react-redux";
 import { setType } from "../store/clipboard";
 import { closeNav } from "../store/states";
 
 const data = [
-  { title: "Text", icon: "file-outline", type: 1 },
+  { title: "Text", icon: "document-outline", type: 1 },
   { title: "Images", icon: "image-outline", type: 2 },
   { title: "Links", icon: "link-outline", type: 3 },
-  { title: "PDFs", icon: "file-text-outline", type: 4 },
-  { title: "Videos", icon: "video-outline", type: 5 },
+  { title: "PDFs", icon: "document-text-outline", type: 4 },
+  { title: "Videos", icon: "videocam-outline", type: 5 },
+  { title: "APk", icon: "document-outline", type: 6 },
 ];
 
 const Sidebar = () => {
   const dispatch = useDispatch();
+
+  const handlePress = (type) => {
+    dispatch(setType(type));
+    dispatch(closeNav());
+  };
+
   const renderItem = ({ item }) => (
     <>
-      <ListItem
-        title={item.title}
-        accessoryLeft={(props) => <Icon {...props} name={item.icon} />}
-        onPress={() => {
-          dispatch(setType(item.type));
-          dispatch(closeNav())
-        }}
-      />
-      <Divider />
+      <TouchableOpacity
+        style={styles.listItem}
+        onPress={() => handlePress(item.type)}
+      >
+        <Ionicons name={item.icon} size={22} color="#333" style={styles.icon} />
+        <Text style={styles.itemText}>{item.title}</Text>
+      </TouchableOpacity>
+      <View style={styles.divider} />
     </>
   );
 
-  const onClose = () => {};
-
   return (
-    <Layout style={styles.container}>
-      <Text category="h5" style={styles.title}>
-        Clipboard Types
-      </Text>
-      <List data={data} renderItem={renderItem} style={styles.list} />
-    </Layout>
+    <View style={styles.container}>
+      <Text style={styles.title}>Clipboard Types</Text>
+      <FlatList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.type.toString()}
+      />
+    </View>
   );
 };
 
 export default Sidebar;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -62,22 +65,32 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 100,
     height: "100%",
-    borderWidth: 2,
+    width: 250,
+    borderRightWidth: 1,
     borderColor: "#eaeaea",
   },
   title: {
+    fontSize: 18,
+    fontWeight: "bold",
     marginBottom: 16,
     textAlign: "center",
+    color: "#333",
   },
-  list: {
-    backgroundColor: "transparent",
+  listItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
   },
-  closeIcon: {
-    width: 24,
-    height: 24,
+  icon: {
+    marginRight: 12,
   },
-  closeNav:{
-    position: "absolute",
-    top:0,
-  }
+  itemText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#eaeaea",
+    marginVertical: 4,
+  },
 });

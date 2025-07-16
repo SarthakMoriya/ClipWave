@@ -11,7 +11,7 @@ const SocketManager = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    socket = io("http://192.168.1.16:3000");
+    socket = io("http://192.168.1.106:3000");
 
     socket.on("connect", () => {
       console.log("Connected to Socket");
@@ -29,6 +29,10 @@ const SocketManager = () => {
       console.log("COPIED URL RECEIVED", data);
       dispatch(addLog({payload:data,type:3}));
     });
+    socket.on("clipboard-apk",(data)=>{
+      console.log("Apk file detected")
+      console.log(data)
+    })
 
     // const checkClipBoard = async () => {
     //   const clipboardContent = await Clipboard.getStringAsync();

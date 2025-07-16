@@ -17,6 +17,11 @@ module.exports = (io) => {
         console.log('Clipboard url received:', data);
         socket.broadcast.emit('clipboard-url', data);
       });
+      // Clipboard sharing functionality
+      socket.on('clipboard-apk', (data) => {
+        console.log('Clipboard apk received:', data);
+        socket.broadcast.emit('clipboard-apk', data);
+      });
   
       // Add authentication middleware for sockets if needed
       socket.on('authenticate', (token) => {
