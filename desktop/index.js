@@ -1,98 +1,106 @@
 const readApk = require("./readApk");
+const { app, clipboard } = require("electron");
+const { io } = require("socket.io-client");
+const { Worker } = require("worker_threads");
 
-try {
-  const { app, clipboard } = require("electron");
-  const { io } = require("socket.io-client");
+let socket;
+let apkWorker;
+let previousClipboardContent = "";
+let previousImgBase64 = null;
 
-  app.whenReady().then(() => {
-    establishSocketConnection();
+// ✅ Create worker once
+function initApkWorker() {
+  apkWorker = new Worker("./apkWorker.js");
+
+  apkWorker.on("message", (result) => {
+    if (!result.success) {
+      console.log("APK Worker error:", result.error);
+      return;
+    }
+
+    console.log("📦 Sending APK:", result.fileName);
+
+    // Split into 256 KB chunks
+    const CHUNK_SIZE = 256 * 1024;
+    const fileData = result.fileData;
+    const totalChunks = Math.ceil(fileData.length / CHUNK_SIZE);
+
+    for (let i = 0; i < totalChunks; i++) {
+      const chunk = fileData.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+      socket.emit("clipboard-apk-chunk", {
+        fileName: result.fileName,
+        index: i,
+        total: totalChunks,
+        data: chunk.toString("base64"),
+      });
+    }
+
+    socket.emit("clipboard-apk-complete", { fileName: result.fileName });
   });
 
-  let socket;
-  let previousClipboardContent = "";
-  let previousImg = "";
-
-  establishSocketConnection = () => {
-    socket = io("http://192.168.1.106:3000");
-    // "https://192.168.1.16:3000"
-
-    socket.on("connect", () => {
-      console.log("Connected to Socket");
-    });
-
-    socket.on("clipboard", (data) => {
-      console.log("COPIED DATA RECIEVED", data);
-    });
-
-    setInterval(() => {
-      // checkClipBoard();
-      checkImage();
-      checkForAPkFiles();
-    }, 5000);
-  };
-
-  checkClipBoard = () => {
-    const clipboardContent = clipboard.readText();
-    if (clipboardContent !== previousClipboardContent) {
-      // Check if the clipboard content is a URL
-      if (checkForUrls(clipboardContent)) {
-        console.log("Emitting URLS");
-        socket.emit("clipboard-url", clipboardContent);
-      } else {
-        console.log("EMITTING DATA...." + clipboardContent);
-        socket.emit("clipboard", clipboardContent);
-      }
-      previousClipboardContent = clipboardContent;
-    } else {
-      checkImage();
-    }
-  };
-
-  let previousImgBase64 = null; // Store base64 of the previous image
-
-  const checkImage = () => {
-    // Read the image from the clipboard
-    const currentImage = clipboard.readImage();
-    console.log(currentImage.isEmpty());
-
-    if (!currentImage.isEmpty()) {
-      const base64Image = currentImage.toDataURL(); // Convert the image to base64 format
-
-      // Check if the image is different from the previous one
-      if (previousImgBase64 !== base64Image) {
-        socket.emit("clipboard-img", base64Image); // Emit the base64 image
-
-        // Store the base64 string for comparison on next calls
-        previousImgBase64 = base64Image;
-      } else {
-        console.log("Image is the same as before, not sending again.");
-      }
-    } else {
-      console.log("Clipboard is empty or no image detected.");
-    }
-  };
-
-  const checkForUrls = (data) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g; // Regex to match URLs
-    const urls = data.match(urlRegex);
-    if (urls) {
-      return true;
-    } else {
-      return false;
-    }
-  };
-
-  const checkForAPkFiles = async (data) => {
-    try {
-      const apk = await readApk();
-      socket.emit("clipboard-apk", {
-        fileName: "test.apk",
-        fileData: apk.toString("base64"), // Send as Base64 if needed
-      });
-    } catch (error) {
-      console.log(error);
-    }
-  };
-} catch (error) {
-  console.log(error);
+  apkWorker.on("error", (err) => {
+    console.error("Worker thread error:", err);
+  });
 }
+
+function establishSocketConnection() {
+  socket = io("http://192.168.1.16:3000");
+
+  socket.on("connect", () => {
+    console.log("✅ Connected to Socket");
+  });
+
+  socket.on("clipboard", (data) => {
+    console.log("📋 Clipboard data received:", data);
+  });
+
+  // Run checks every 5s
+  setInterval(() => {
+    checkClipBoard();
+    checkImage();
+    checkForApkFiles();
+  }, 5000);
+}
+
+function checkClipBoard() {
+  const clipboardContent = clipboard.readText();
+  if (clipboardContent !== previousClipboardContent) {
+    if (checkForUrls(clipboardContent)) {
+      console.log("🌍 Emitting URL:", clipboardContent);
+      socket.emit("clipboard-url", clipboardContent);
+    } else {
+      console.log("📋 Emitting text:", clipboardContent);
+      socket.emit("clipboard", clipboardContent);
+    }
+    previousClipboardContent = clipboardContent;
+  } else {
+    checkImage();
+  }
+}
+
+function checkImage() {
+  const currentImage = clipboard.readImage();
+  if (!currentImage.isEmpty()) {
+    const base64Image = currentImage.toDataURL();
+    if (previousImgBase64 !== base64Image) {
+      console.log("🖼️ Sending new image from clipboard");
+      socket.emit("clipboard-img", base64Image);
+      previousImgBase64 = base64Image;
+    }
+  }
+}
+
+function checkForUrls(data) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  return !!data.match(urlRegex);
+}
+
+function checkForApkFiles() {
+  // Just tell worker to check
+  apkWorker.postMessage("read");
+}
+
+app.whenReady().then(() => {
+  initApkWorker();
+  establishSocketConnection();
+});
