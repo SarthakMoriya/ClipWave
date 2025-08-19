@@ -12,6 +12,7 @@ export const extraSlice = createSlice({
       state.isnavOpen = true
     },
     closeNav:(state,)=>{
+      console.log(state.isnavOpen)
       state.isnavOpen = false
     },
   },

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { PermissionsAndroid, Platform } from 'react-native';
+import { PermissionsAndroid, Platform } from "react-native";
 import LoginScreen from "./screens/LoginScreen";
 import HomeScreen2 from "./screens/HomeScreen2";
 import SignupScreen from "./screens/SignupScreen";
@@ -10,10 +10,23 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { store } from "./store/store";
 import { Provider } from "react-redux";
 import SocketManager from "./SocketHandler";
+import * as FileSystem from "expo-file-system";
+async function listFiles() {
+  try {
+    console.log("ttt", FileSystem.documentDirectory);
+    const files = await FileSystem.readDirectoryAsync(
+      FileSystem.documentDirectory
+    );
+    console.log("📂 Files in Expo storage:", files);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+listFiles();
 
 const requestStoragePermission = async () => {
-  console.log("hi")
-  console.log(Platform.OS)
+  listFiles();
   if (Platform.OS === "android") {
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
@@ -25,7 +38,7 @@ const requestStoragePermission = async () => {
 
 const Stack = createStackNavigator();
 export default function App() {
-  requestStoragePermission()
+  requestStoragePermission();
   const checkToken = async () => {
     const token = await AsyncStorage.getItem("token");
     if (token) {

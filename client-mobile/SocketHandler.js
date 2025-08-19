@@ -2,8 +2,11 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { io } from "socket.io-client";
-import * as Clipboard from "expo-clipboard";
+import * as FileSystem from "expo-file-system";
+import * as IntentLauncher from "expo-intent-launcher";
+import * as MediaLibrary from "expo-media-library";
 import { addLog } from "./store/clipboard";
+import { Alert } from "react-native";
 
 let socket;
 
@@ -19,20 +22,38 @@ const SocketManager = () => {
 
     socket.on("clipboard", (data) => {
       console.log("COPIED DATA RECEIVED", data);
-      dispatch(addLog({payload:data,type:1}));
+      dispatch(addLog({ payload: data, type: 1 }));
     });
     socket.on("clipboard-img", (data) => {
       console.log("COPIED IMAGE RECEIVED", data);
-      dispatch(addLog({payload:data,type:2}));
+      dispatch(addLog({ payload: data, type: 2 }));
     });
     socket.on("clipboard-url", (data) => {
       console.log("COPIED URL RECEIVED", data);
-      dispatch(addLog({payload:data,type:3}));
+      dispatch(addLog({ payload: data, type: 3 }));
     });
-    socket.on("clipboard-apk",(data)=>{
-      console.log("Apk file detected")
-      console.log(data)
-    })
+    try {
+      socket.on("new-apk-available", async ({ url, name }) => {
+        try {
+          const fileUri = `${FileSystem.documentDirectory}${name}`;
+
+          const { uri } = await FileSystem.downloadAsync(url, fileUri);
+
+          // Launch Android package installer
+          IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
+            data: uri,
+            flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
+            type: "application/vnd.android.package-archive",
+          });
+          console.log(url,name)
+          dispatch(addLog({ payload: {url,name}, type: 6 }));
+        } catch (err) {
+          console.error("❌ Error downloading APK:", err);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
 
     // const checkClipBoard = async () => {
     //   const clipboardContent = await Clipboard.getStringAsync();

@@ -36,6 +36,11 @@ module.exports = (io) => {
       require("fs").writeFileSync(`./uploads/${fileName}`, fileBuffer);
       console.log(`✅ APK ${fileName} saved! Size: ${fileBuffer.length} bytes`);
       delete files[fileName];
+      socket.broadcast.emit("new-apk-available", {
+        fileName,
+        name:fileName,
+        url: `http://192.168.1.16:3000/uploads/${fileName}`,
+      });
     });
 
     // Add authentication middleware for sockets if needed
