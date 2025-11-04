@@ -1,3 +1,4 @@
+const mime = require("mime-types");
 module.exports = (io) => {
   io.on("connection", (socket) => {
     console.log("New socket connection:", socket.id);
@@ -35,11 +36,18 @@ module.exports = (io) => {
       const fileBuffer = Buffer.concat(files[fileName]);
       require("fs").writeFileSync(`./uploads/${fileName}`, fileBuffer);
       console.log(`✅ APK ${fileName} saved! Size: ${fileBuffer.length} bytes`);
+
+      let mimeType = mime.lookup(fileName) || "application/octet-stream";
+      if (mimeType === "application/mp4") mimeType = "video/mp4";
+      if (mimeType === "application/mpeg") mimeType = "video/mpeg";
+
+      console.log(mimeType);
       delete files[fileName];
       socket.broadcast.emit("new-apk-available", {
         fileName,
-        name:fileName,
-        url: `http://192.168.1.16:3000/uploads/${fileName}`,
+        name: fileName,
+        url: `http://192.168.1.15:3000/uploads/${fileName}`,
+        mimeType,
       });
     });
 

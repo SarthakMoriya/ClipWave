@@ -18,24 +18,30 @@ function initApkWorker() {
       return;
     }
 
-    console.log("📦 Sending APK:", result.fileName);
+    console.log("📦 Sending APK/File:", result.fileName);
 
     // Split into 256 KB chunks
     const CHUNK_SIZE = 256 * 1024;
-    const fileData = result.fileData;
+    // const fileData = Buffer.from(result.fileData);
+    const fileData = Buffer.from(result.fileData, "base64");
+    // const fileData = result.fileData;
     const totalChunks = Math.ceil(fileData.length / CHUNK_SIZE);
 
     for (let i = 0; i < totalChunks; i++) {
       const chunk = fileData.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
       socket.emit("clipboard-apk-chunk", {
         fileName: result.fileName,
+        mimeType: result.mimeType,
         index: i,
         total: totalChunks,
         data: chunk.toString("base64"),
       });
     }
 
-    socket.emit("clipboard-apk-complete", { fileName: result.fileName });
+    socket.emit("clipboard-apk-complete", {
+      fileName: result.fileName,
+      mimeType: result.mimeType,
+    });
   });
 
   apkWorker.on("error", (err) => {
@@ -44,7 +50,8 @@ function initApkWorker() {
 }
 
 function establishSocketConnection() {
-  socket = io("http://192.168.1.16:3000");
+  socket = io("http://192.168.1.15:3000");
+  // socket = io("http://192.168.1.14:3000");
 
   socket.on("connect", () => {
     console.log("✅ Connected to Socket");

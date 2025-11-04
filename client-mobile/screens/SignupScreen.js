@@ -27,7 +27,7 @@ const SignupScreen = ({ navigation }) => {
 
         try {
           const response = await fetch(
-            "http://192.168.1.16:3000/api/auth/signup",
+            "http://192.168.1.14:3000/api/auth/signup",
             {
               method: "POST",
               headers: {

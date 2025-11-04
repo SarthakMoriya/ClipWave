@@ -31,7 +31,7 @@ app.use("/uploads", express.static(APK_DIR));
 app.use("/api/auth", require("./routes/authRoutes"));
 
 // Socket.io connection handler
-require("./sockets/socketHandler")(io);
+require("./sockets/sockethandler")(io);
 
 // Initialize database and start server
 const PORT = process.env.PORT || 3000;

@@ -22,6 +22,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import Sidebar from "../components/Sidebar";
 import { closeNav, openNav } from "../store/states";
 import Icon from "react-native-vector-icons/Ionicons";
+import { removeLogs } from "../store/clipboard";
+import { Button } from "react-native";
+import styles from "../styles/HomeScreen2.styles";
 
 const { width, height } = Dimensions.get("window");
 
@@ -111,6 +114,11 @@ const HomeScreen2 = () => {
     }
   };
 
+  // Clear logs of currentl type selected
+  const clearLogs = () => {
+    dispatch(removeLogs({ type: type }));
+  };
+
   const renderClipboardCard = (item, i) => {
     const typeInfo = getContentTypeInfo(item.type);
 
@@ -186,6 +194,21 @@ const HomeScreen2 = () => {
                 />
                 <Text style={styles.mediaText}>
                   {item.type === 4 ? "PDF Document" : "Video File"}
+                </Text>
+                <Text style={styles.mediaSubtext}>Tap to open or copy</Text>
+              </View>
+            )}
+
+            {/* VIDEOS */}
+            {(item.type === 5) && (
+              <View style={styles.mediaContainer}>
+                <Icon
+                  name="play-outline"
+                  size={32}
+                  color={typeInfo.color}
+                />
+                <Text style={styles.mediaText}>
+                  Video File
                 </Text>
                 <Text style={styles.mediaSubtext}>Tap to open or copy</Text>
               </View>
@@ -294,12 +317,17 @@ const HomeScreen2 = () => {
         {/* Content Area */}
         <TouchableWithoutFeedback onPress={() => dispatch(closeNav())}>
           <View style={styles.contentContainer}>
-            {/* Welcome Section */}
-            <View style={styles.welcomeSection}>
-              <Text style={styles.welcomeText}>Welcome back! 👋</Text>
-              <Text style={styles.welcomeSubtext}>
-                {filteredLogs.length} items ready to share
-              </Text>
+            <View style={styles.welcomeContainer}>
+              {/* Welcome Section */}
+              <View style={styles.welcomeSection}>
+                <Text style={styles.welcomeText}>Welcome back! 👋</Text>
+                <Text style={styles.welcomeSubtext}>
+                  {filteredLogs.length} items ready to share
+                </Text>
+              </View>
+              <View style={styles.deleteButton}>
+                <Button title="Clear" onPress={clearLogs} color="#007AFF" />
+              </View>
             </View>
 
             {/* Content Cards */}
@@ -326,273 +354,5 @@ const HomeScreen2 = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#667eea",
-  },
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.2)",
-  },
-  menuButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  headerContent: {
-    flex: 1,
-    alignItems: "center",
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-    letterSpacing: 0.5,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "rgba(255, 255, 255, 0.8)",
-    marginTop: 2,
-  },
-  addButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  contentContainer: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    marginTop: 8,
-  },
-  welcomeSection: {
-    padding: 24,
-    paddingBottom: 16,
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1a202c",
-    marginBottom: 4,
-  },
-  welcomeSubtext: {
-    fontSize: 16,
-    color: "#64748b",
-    fontWeight: "500",
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-  },
-  card: {
-    marginBottom: 16,
-    borderRadius: 20,
-    borderLeftWidth: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-    overflow: "hidden",
-  },
-  cardGradient: {
-    padding: 0,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    paddingBottom: 12,
-  },
-  typeIndicator: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  typeIcon: {
-    fontSize: 16,
-    marginRight: 6,
-  },
-  typeText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  cardActions: {
-    flexDirection: "row",
-  },
-  actionButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "rgba(0, 0, 0, 0.05)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 8,
-  },
-  cardContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-  },
-  textContent: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: "#2d3748",
-    backgroundColor: "#f7fafc",
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  imageContainer: {
-    position: "relative",
-  },
-  imageContent: {
-    width: "100%",
-    height: 200,
-    borderRadius: 12,
-    backgroundColor: "#f7fafc",
-  },
-  downloadButton: {
-    position: "absolute",
-    bottom: 12,
-    right: 12,
-    borderRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  downloadGradient: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  downloadText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "bold",
-    marginLeft: 4,
-  },
-  fileInfo: {
-    backgroundColor: "#f7fafc",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  fileName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#2d3748",
-    marginBottom: 6,
-  },
-  fileUrl: {
-    fontSize: 14,
-    color: "#64748b",
-    fontFamily: "monospace",
-  },
-  mediaContainer: {
-    alignItems: "center",
-    padding: 24,
-    backgroundColor: "#f7fafc",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  mediaText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#2d3748",
-    marginTop: 8,
-  },
-  mediaSubtext: {
-    fontSize: 14,
-    color: "#64748b",
-    marginTop: 4,
-  },
-  cardFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    paddingTop: 8,
-  },
-  timestampText: {
-    fontSize: 12,
-    color: "#a0aec0",
-    fontWeight: "500",
-  },
-  cardFooterActions: {
-    flexDirection: "row",
-  },
-  miniButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 8,
-  },
-  miniButtonText: {
-    fontSize: 11,
-    fontWeight: "bold",
-    marginLeft: 4,
-    textTransform: "uppercase",
-    letterSpacing: 0.3,
-  },
-  emptyState: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-    paddingHorizontal: 32,
-  },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#2d3748",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  emptySubtitle: {
-    fontSize: 16,
-    color: "#64748b",
-    textAlign: "center",
-    lineHeight: 24,
-  },
-});
 
 export default HomeScreen2;

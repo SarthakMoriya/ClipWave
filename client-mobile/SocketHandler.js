@@ -4,9 +4,8 @@ import { useDispatch } from "react-redux";
 import { io } from "socket.io-client";
 import * as FileSystem from "expo-file-system";
 import * as IntentLauncher from "expo-intent-launcher";
-import * as MediaLibrary from "expo-media-library";
 import { addLog } from "./store/clipboard";
-import { Alert } from "react-native";
+import * as Sharing from "expo-sharing";
 
 let socket;
 
@@ -14,7 +13,8 @@ const SocketManager = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    socket = io("http://192.168.1.16:3000");
+    // socket = io("http://192.168.1.14:3000");
+    socket = io("http://192.168.1.15:3000");
 
     socket.on("connect", () => {
       console.log("Connected to Socket");
@@ -33,22 +33,31 @@ const SocketManager = () => {
       dispatch(addLog({ payload: data, type: 3 }));
     });
     try {
-      socket.on("new-apk-available", async ({ url, name }) => {
+      socket.on("new-apk-available", async ({ url, name, mimeType }) => {
         try {
           const fileUri = `${FileSystem.documentDirectory}${name}`;
 
+          // const { uri } = await FileSystem.downloadAsync(url, fileUri);
           const { uri } = await FileSystem.downloadAsync(url, fileUri);
+          console.log(`URI:${uri}`);
+          console.log(`MIME TYPE:${mimeType}`);
 
-          // Launch Android package installer
-          IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
-            data: uri,
-            flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
-            type: "application/vnd.android.package-archive",
+          await Sharing.shareAsync(uri, {
+            mimeType,
+            dialogTitle: "Open file with...",
           });
-          console.log(url,name)
-          dispatch(addLog({ payload: {url,name}, type: 6 }));
+
+          if (mimeType === "application/vnd.android.package-archive") {
+            dispatch(addLog({ payload: { url, name }, type: 6 }));
+          } else if (mimeType.startsWith("video/")) {
+            dispatch(addLog({ payload: { url, name }, type: 5 }));
+          } else if (mimeType.startsWith("image/")) {
+          } else {
+          }
+
+          console.log(`✅ Opened ${name} (${mimeType})`);
         } catch (err) {
-          console.error("❌ Error downloading APK:", err);
+          console.error("❌ Error opening file:", err);
         }
       });
     } catch (error) {
