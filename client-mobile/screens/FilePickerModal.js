@@ -8,14 +8,16 @@ import {
   Alert,
   ActivityIndicator,
   Image,
+  Dimensions,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
-import * as FileSystem from "expo-file-system";
-import axios from "axios";
 import { Platform } from "react-native";
+import { BlurView } from 'expo-blur';
+
+const { width } = Dimensions.get('window');
 
 const FilePickerModal = ({ visible, onClose }) => {
   const [loading, setLoading] = useState(false);
@@ -34,7 +36,7 @@ const FilePickerModal = ({ visible, onClose }) => {
 
       if (result.type === "cancel") return;
       setSelectedItem(result.assets ? result.assets[0] : result);
-      setType(4); // document
+      setType(4);
     } catch (err) {
       setLoading(false);
       Alert.alert("Error", "Unable to pick document");
@@ -60,7 +62,7 @@ const FilePickerModal = ({ visible, onClose }) => {
 
       if (!result.canceled) {
         setSelectedItem(result.assets[0]);
-        setType(7); // image
+        setType(7);
       }
     } catch (err) {
       console.log(err);
@@ -89,7 +91,7 @@ const FilePickerModal = ({ visible, onClose }) => {
 
       if (!result.canceled) {
         setSelectedItem(result.assets[0]);
-        setType(5); // video
+        setType(5);
       }
     } catch (err) {
       setLoading(false);
@@ -111,9 +113,8 @@ const FilePickerModal = ({ visible, onClose }) => {
       console.log(uri);
       const fileName =
         selectedItem.name || uri.split("/").pop() || "upload_file";
-      const fileType = selectedItem.mimeType || "image/jpeg"; // fallback for images
+      const fileType = selectedItem.mimeType || "image/jpeg";
 
-      // ✅ Convert `file://` URI to a valid format for upload
       let fileUri = uri;
       if (Platform.OS === "ios") {
         fileUri = uri.replace("file://", "");
@@ -121,12 +122,11 @@ const FilePickerModal = ({ visible, onClose }) => {
 
       const formData = new FormData();
       formData.append("file", {
-        uri: uri, // always keep it as `uri`
+        uri: uri,
         name: fileName,
         type: fileType,
       });
 
-      // ✅ Use fetch instead of axios for React Native FormData (more reliable)
       const response = await fetch("http://192.168.1.15:3000/api/upload", {
         method: "POST",
         body: formData,
@@ -153,79 +153,151 @@ const FilePickerModal = ({ visible, onClose }) => {
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          <Text style={styles.title}>Select File to Share</Text>
+          {/* Header with accent line */}
+          <View style={styles.headerContainer}>
+            <View style={styles.accentLine} />
+            <Text style={styles.title}>Share Content</Text>
+            <Text style={styles.subtitle}>Choose what you want to share</Text>
+          </View>
 
           {loading ? (
-            <ActivityIndicator
-              size="large"
-              color="#667eea"
-              style={{ marginVertical: 20 }}
-            />
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#F59E0B" />
+              <Text style={styles.loadingText}>Loading...</Text>
+            </View>
           ) : (
-            <>
-              <TouchableOpacity style={styles.option} onPress={pickImage}>
-                <LinearGradient
-                  colors={["#667eea", "#764ba2"]}
-                  style={styles.optionGradient}
-                >
-                  <Icon name="image-outline" size={22} color="#fff" />
-                  <Text style={styles.optionText}>Pick Image</Text>
-                </LinearGradient>
+            <View style={styles.optionsContainer}>
+              {/* Image Option */}
+              <TouchableOpacity 
+                style={styles.optionCard} 
+                onPress={pickImage}
+                activeOpacity={0.7}
+              >
+                <View style={styles.iconContainer}>
+                  <LinearGradient
+                    colors={['#F59E0B', '#D97706']}
+                    style={styles.iconGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Icon name="image-outline" size={28} color="#000" />
+                  </LinearGradient>
+                </View>
+                <View style={styles.optionContent}>
+                  <Text style={styles.optionTitle}>Image</Text>
+                  <Text style={styles.optionDesc}>From gallery</Text>
+                </View>
+                <Icon name="chevron-forward" size={20} color="#6B7280" />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.option} onPress={pickMedia}>
-                <LinearGradient
-                  colors={["#43cea2", "#185a9d"]}
-                  style={styles.optionGradient}
-                >
-                  <Icon name="videocam-outline" size={22} color="#fff" />
-                  <Text style={styles.optionText}>Pick Video</Text>
-                </LinearGradient>
+              {/* Video Option */}
+              <TouchableOpacity 
+                style={styles.optionCard} 
+                onPress={pickMedia}
+                activeOpacity={0.7}
+              >
+                <View style={styles.iconContainer}>
+                  <LinearGradient
+                    colors={['#FBBF24', '#F59E0B']}
+                    style={styles.iconGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Icon name="videocam-outline" size={28} color="#000" />
+                  </LinearGradient>
+                </View>
+                <View style={styles.optionContent}>
+                  <Text style={styles.optionTitle}>Video</Text>
+                  <Text style={styles.optionDesc}>From library</Text>
+                </View>
+                <Icon name="chevron-forward" size={20} color="#6B7280" />
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.option} onPress={pickDocument}>
-                <LinearGradient
-                  colors={["#00b09b", "#96c93d"]}
-                  style={styles.optionGradient}
-                >
-                  <Icon name="document-outline" size={22} color="#fff" />
-                  <Text style={styles.optionText}>Pick Document / PDF</Text>
-                </LinearGradient>
+              {/* Document Option */}
+              <TouchableOpacity 
+                style={styles.optionCard} 
+                onPress={pickDocument}
+                activeOpacity={0.7}
+              >
+                <View style={styles.iconContainer}>
+                  <LinearGradient
+                    colors={['#FCD34D', '#FBBF24']}
+                    style={styles.iconGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Icon name="document-outline" size={28} color="#000" />
+                  </LinearGradient>
+                </View>
+                <View style={styles.optionContent}>
+                  <Text style={styles.optionTitle}>Document</Text>
+                  <Text style={styles.optionDesc}>PDF, DOCX, etc.</Text>
+                </View>
+                <Icon name="chevron-forward" size={20} color="#6B7280" />
               </TouchableOpacity>
-            </>
+            </View>
           )}
 
-          {/* 📂 Preview selected file */}
+          {/* Preview Section */}
           {selectedItem && (
-            <View style={styles.previewContainer}>
-              {type === 7 && (
-                <Image
-                  source={{ uri: selectedItem.uri }}
-                  style={styles.previewImage}
-                />
-              )}
-
-              <Text style={styles.previewName}>
-                {selectedItem.name || "Selected File"}
-              </Text>
+            <View style={styles.previewSection}>
+              <View style={styles.divider} />
+              <Text style={styles.previewLabel}>Selected File</Text>
+              
+              <View style={styles.previewCard}>
+                {type === 7 && (
+                  <Image
+                    source={{ uri: selectedItem.uri }}
+                    style={styles.previewImage}
+                  />
+                )}
+                {type !== 7 && (
+                  <View style={styles.fileIconContainer}>
+                    <Icon 
+                      name={type === 5 ? "videocam" : "document"} 
+                      size={32} 
+                      color="#F59E0B" 
+                    />
+                  </View>
+                )}
+                
+                <View style={styles.fileInfo}>
+                  <Text style={styles.fileName} numberOfLines={1}>
+                    {selectedItem.name || "Selected File"}
+                  </Text>
+                  {selectedItem.size && (
+                    <Text style={styles.fileSize}>
+                      {(selectedItem.size / 1024 / 1024).toFixed(2)} MB
+                    </Text>
+                  )}
+                </View>
+              </View>
 
               <TouchableOpacity
                 style={styles.shareButton}
                 onPress={uploadToServer}
+                activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={["#667eea", "#764ba2"]}
+                  colors={['#F59E0B', '#D97706']}
                   style={styles.shareGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
                 >
-                  <Icon name="share-social-outline" size={18} color="#fff" />
-                  <Text style={styles.shareText}>Share</Text>
+                  <Icon name="share-social-outline" size={20} color="#000" />
+                  <Text style={styles.shareText}>Share File</Text>
                 </LinearGradient>
               </TouchableOpacity>
             </View>
           )}
 
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeText}>Cancel</Text>
+          {/* Cancel Button */}
+          <TouchableOpacity 
+            style={styles.cancelButton} 
+            onPress={onClose}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -236,78 +308,182 @@ const FilePickerModal = ({ visible, onClose }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
     justifyContent: "flex-end",
   },
   modalContainer: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    elevation: 8,
+    backgroundColor: "#111827",
+    paddingTop: 24,
+    paddingHorizontal: 20,
+    paddingBottom: 34,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    borderTopWidth: 2,
+    borderTopColor: "#F59E0B",
+    shadowColor: "#F59E0B",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 20,
+  },
+  headerContainer: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  accentLine: {
+    width: 48,
+    height: 4,
+    backgroundColor: "#F59E0B",
+    borderRadius: 2,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1a202c",
-    marginBottom: 16,
-    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginBottom: 6,
+    letterSpacing: 0.5,
   },
-  option: {
-    marginBottom: 12,
+  subtitle: {
+    fontSize: 14,
+    color: "#9CA3AF",
+    fontWeight: "400",
   },
-  optionGradient: {
+  optionsContainer: {
+    gap: 12,
+  },
+  optionCard: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
+    backgroundColor: "#1F2937",
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#374151",
   },
-  optionText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 8,
+  iconContainer: {
+    marginRight: 14,
   },
-  previewContainer: {
+  iconGradient: {
+    width: 52,
+    height: 52,
+    borderRadius: 14,
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
+    shadowColor: "#F59E0B",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  optionContent: {
+    flex: 1,
+  },
+  optionTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#FFFFFF",
+    marginBottom: 2,
+  },
+  optionDesc: {
+    fontSize: 13,
+    color: "#9CA3AF",
+    fontWeight: "400",
+  },
+  loadingContainer: {
+    alignItems: "center",
+    paddingVertical: 32,
+  },
+  loadingText: {
+    marginTop: 12,
+    color: "#9CA3AF",
+    fontSize: 14,
+  },
+  previewSection: {
+    marginTop: 24,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#374151",
+    marginBottom: 20,
+  },
+  previewLabel: {
+    fontSize: 13,
+    color: "#9CA3AF",
+    fontWeight: "600",
+    marginBottom: 12,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  previewCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1F2937",
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#374151",
+    marginBottom: 16,
   },
   previewImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    marginBottom: 10,
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    marginRight: 12,
+    backgroundColor: "#374151",
   },
-  previewName: {
-    fontSize: 14,
-    color: "#333",
-    marginBottom: 10,
+  fileIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    backgroundColor: "#374151",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  fileInfo: {
+    flex: 1,
+  },
+  fileName: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#FFFFFF",
+    marginBottom: 4,
+  },
+  fileSize: {
+    fontSize: 13,
+    color: "#9CA3AF",
   },
   shareButton: {
-    marginTop: 8,
+    borderRadius: 14,
+    overflow: "hidden",
   },
   shareGradient: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 20,
+    paddingVertical: 16,
+    gap: 8,
   },
   shareText: {
-    color: "#fff",
-    fontWeight: "600",
-    marginLeft: 6,
+    color: "#000000",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.5,
   },
-  closeButton: {
-    marginTop: 12,
+  cancelButton: {
+    marginTop: 16,
+    paddingVertical: 14,
     alignItems: "center",
-    paddingVertical: 10,
+    backgroundColor: "#1F2937",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#374151",
   },
-  closeText: {
-    color: "#64748b",
-    fontSize: 15,
+  cancelText: {
+    color: "#9CA3AF",
+    fontSize: 16,
     fontWeight: "600",
   },
 });

@@ -5,13 +5,14 @@ import {
   View,
   TextInput,
   Text,
-  Animated,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
-import { LinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("test@gmail.com");
@@ -21,31 +22,16 @@ const LoginScreen = ({ navigation }) => {
 
   const onLoginPress = async () => {
     if (email && password) {
-      console.log("Signed Up with email:", email);
-
       try {
-        const response = await fetch(
-          // "http://192.168.1.14:3000/api/auth/login",
-          "http://192.168.1.15:3000/api/auth/login",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-          }
-        );
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.log("Error Response:", errorText);
-          return;
-        }
+        const response = await fetch("http://192.168.1.15:3000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
 
         const data = await response.json();
         if (data.code === 200) {
           await AsyncStorage.setItem("token", data.token);
-          console.log("Token:", data.token);
           navigation.navigate("Home");
         }
       } catch (err) {
@@ -57,41 +43,43 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <LinearGradient
-      colors={['#667eea', '#764ba2']}
-      style={styles.container}
-    >
-      {/* Floating Elements Background */}
-      <View style={styles.floatingElements}>
-        <View style={[styles.floatingCircle, styles.circle1]} />
-        <View style={[styles.floatingCircle, styles.circle2]} />
-        <View style={[styles.floatingCircle, styles.circle3]} />
+    <LinearGradient colors={["#FFB75E", "#ED8F03"]} style={styles.container}>
+      {/* Floating Circles Background */}
+      <View style={styles.floatingBackground}>
+        <View style={[styles.circle, styles.circle1]} />
+        <View style={[styles.circle, styles.circle2]} />
+        <View style={[styles.circle, styles.circle3]} />
       </View>
 
-      <View style={styles.content}>
-        {/* Logo/Brand Section */}
-        <View style={styles.brandSection}>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>📋</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.content}
+      >
+        {/* Logo Section */}
+        <View style={styles.logoSection}>
+          <View style={styles.logoBox}>
+            <Text style={styles.logoEmoji}>📋</Text>
           </View>
-          <Text style={styles.brandName}>ClipWave</Text>
-          <Text style={styles.brandTagline}>Share instantly, connect seamlessly</Text>
+          <Text style={styles.appName}>ClipWave</Text>
+          <Text style={styles.tagline}>
+            Share instantly, connect seamlessly
+          </Text>
         </View>
 
-        {/* Form Section */}
+        {/* Login Card */}
         <View style={styles.formCard}>
-          <Text style={styles.formTitle}>Welcome Back</Text>
-          
+          <Text style={styles.heading}>Welcome Back 👋</Text>
+
+          {/* Email Input */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email Address</Text>
-            <View style={[
-              styles.inputWrapper,
-              emailFocused && styles.inputWrapperFocused
-            ]}>
+            <View
+              style={[styles.inputWrapper, emailFocused && styles.inputFocused]}
+            >
               <TextInput
-                value={email}
                 placeholder="Enter your email"
                 placeholderTextColor="#9CA3AF"
+                value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 style={styles.input}
@@ -101,16 +89,19 @@ const LoginScreen = ({ navigation }) => {
             </View>
           </View>
 
+          {/* Password Input */}
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Password</Text>
-            <View style={[
-              styles.inputWrapper,
-              passwordFocused && styles.inputWrapperFocused
-            ]}>
+            <View
+              style={[
+                styles.inputWrapper,
+                passwordFocused && styles.inputFocused,
+              ]}
+            >
               <TextInput
-                value={password}
                 placeholder="Enter your password"
                 placeholderTextColor="#9CA3AF"
+                value={password}
                 onChangeText={setPassword}
                 secureTextEntry
                 style={styles.input}
@@ -120,12 +111,13 @@ const LoginScreen = ({ navigation }) => {
             </View>
           </View>
 
+          {/* Login Button */}
           <TouchableOpacity style={styles.loginButton} onPress={onLoginPress}>
             <LinearGradient
-              colors={['#667eea', '#764ba2']}
+              colors={["#FFB75E", "#ED8F03"]}
               style={styles.buttonGradient}
               start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
+              end={{ x: 1, y: 1 }}
             >
               <Text style={styles.buttonText}>Sign In</Text>
             </LinearGradient>
@@ -138,178 +130,171 @@ const LoginScreen = ({ navigation }) => {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerQuestion}>Don't have an account?</Text>
+          <Text style={styles.footerText}>Don’t have an account?</Text>
           <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-            <Text style={styles.footerLink}>Create Account</Text>
+            <Text style={styles.footerLink}> Create Account</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </LinearGradient>
   );
 };
+
+export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  floatingElements: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
+  floatingBackground: {
+    ...StyleSheet.absoluteFillObject,
   },
-  floatingCircle: {
-    position: 'absolute',
+  circle: {
+    position: "absolute",
     borderRadius: 100,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: "rgba(255,255,255,0.08)",
   },
   circle1: {
-    width: 120,
-    height: 120,
-    top: height * 0.1,
+    width: 140,
+    height: 140,
+    top: height * 0.08,
     right: -40,
   },
   circle2: {
-    width: 80,
-    height: 80,
-    top: height * 0.3,
-    left: -20,
+    width: 100,
+    height: 100,
+    top: height * 0.35,
+    left: -30,
   },
   circle3: {
-    width: 60,
-    height: 60,
-    bottom: height * 0.2,
-    right: 40,
+    width: 80,
+    height: 80,
+    bottom: height * 0.15,
+    right: 20,
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
+    justifyContent: "center",
+    paddingHorizontal: 28,
   },
-  brandSection: {
-    alignItems: 'center',
+  logoSection: {
+    alignItems: "center",
     marginBottom: 40,
   },
-  logoContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+  logoBox: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "rgba(255,255,255,0.25)",
+    marginBottom: 12,
   },
-  logoText: {
-    fontSize: 40,
+  logoEmoji: {
+    fontSize: 42,
   },
-  brandName: {
+  appName: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    letterSpacing: 1,
-    marginBottom: 8,
+    fontWeight: "700",
+    color: "#fff",
+    letterSpacing: 1.2,
   },
-  brandTagline: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
+  tagline: {
+    fontSize: 15,
+    color: "rgba(255,255,255,0.85)",
+    marginTop: 6,
   },
   formCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 24,
-    padding: 32,
-    shadowColor: '#000',
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: 20,
+    padding: 30,
+    shadowColor: "#ED8F03",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 20,
     elevation: 15,
   },
-  formTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    textAlign: 'center',
-    marginBottom: 32,
+  heading: {
+    fontSize: 26,
+    fontWeight: "700",
+    textAlign: "center",
+    color: "#3E2723",
+    marginBottom: 28,
   },
   inputContainer: {
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#5D4037",
     marginBottom: 8,
-    marginLeft: 4,
   },
   inputWrapper: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: "#FFF8E1",
     borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderWidth: 1.5,
+    borderColor: "#FFECB3",
     paddingHorizontal: 16,
-    paddingVertical: 4,
   },
-  inputWrapperFocused: {
-    borderColor: '#667eea',
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#667eea',
+  inputFocused: {
+    borderColor: "#FFB75E",
+    shadowColor: "#ED8F03",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    backgroundColor: "#FFFFFF",
+    elevation: 6,
   },
   input: {
     fontSize: 16,
-    color: '#1F2937',
+    color: "#3E2723",
     paddingVertical: 12,
   },
   loginButton: {
-    marginTop: 8,
+    marginTop: 10,
     borderRadius: 12,
-    shadowColor: '#667eea',
+    overflow: "hidden",
+    shadowColor: "#ED8F03",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 8,
   },
   buttonGradient: {
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
+    paddingVertical: 15,
+    alignItems: "center",
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "700",
     letterSpacing: 0.5,
   },
   forgotPassword: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 16,
   },
   forgotPasswordText: {
-    color: '#6B7280',
+    color: "#A1887F",
     fontSize: 14,
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 32,
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 30,
   },
-  footerQuestion: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 16,
-    marginRight: 8,
+  footerText: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 15,
   },
   footerLink: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textDecorationLine: 'underline',
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "700",
+    textDecorationLine: "underline",
   },
 });
-
-export default LoginScreen;
