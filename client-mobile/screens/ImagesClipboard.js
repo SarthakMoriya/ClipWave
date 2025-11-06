@@ -1,51 +1,69 @@
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React from "react";
+import {
+  Alert,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  Platform,
+} from "react-native";
 import styles from "../styles/HomeScreen2.styles";
-import { Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Icon from "react-native-vector-icons/Ionicons";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 
 const ImagesClipboard = ({ item }) => {
-
-    const saveBase64ToGallery = async (base64Data) => {
+  console.log(item)
+  const saveImageToGallery = async (url, name) => {
     try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission denied",
-          "Allow access to media to save image."
-        );
+      if (!url) {
+        Alert.alert("❌ Error", "Invalid image URL.");
         return;
       }
 
-      const base64 = base64Data.replace(/^data:image\/\w+;base64,/, "");
-      const fileUri = FileSystem.documentDirectory + "downloadedImage.jpg";
+      // ✅ Ask for permission to access media library
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission Denied", "Please allow access to media library.");
+        return;
+      }
 
-      await FileSystem.writeAsStringAsync(fileUri, base64, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      // ✅ Derive a valid file name and extension
+      const fileExtension = name?.split(".").pop() || "jpg";
+      const safeName = name?.replace(/[^a-zA-Z0-9._-]/g, "_") || `image.${fileExtension}`;
+      const fileUri = `${FileSystem.documentDirectory}${safeName}`;
 
-      const asset = await MediaLibrary.createAssetAsync(fileUri);
-      await MediaLibrary.createAlbumAsync("Download", asset, false);
+      console.log("⬇️ Downloading:", url);
+      console.log("📂 Saving as:", fileUri);
 
-      Alert.alert("Success", "Image saved to gallery!");
+      // ✅ Download file to app storage
+      const { uri } = await FileSystem.downloadAsync(url, fileUri);
+
+      // ✅ Save downloaded file to gallery
+      const asset = await MediaLibrary.createAssetAsync(uri);
+
+      // On Android 13+, the default album name might be ignored, so check platform
+      const albumName = Platform.OS === "android" ? "Downloads" : "Download";
+      await MediaLibrary.createAlbumAsync(albumName, asset, false);
+
+      Alert.alert("✅ Success", `Image saved to ${albumName} folder!`);
     } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "Failed to save image.");
+      console.error("❌ Error saving image:", error);
+      Alert.alert("Error", "Failed to save image. Please try again.");
     }
   };
 
   return (
     <View style={styles.imageContainer}>
       <Image
-        source={{ uri: item.content }}
+        source={{ uri: item.content.url }}
         style={styles.imageContent}
         resizeMode="cover"
       />
       <TouchableOpacity
         style={styles.downloadButton}
-        onPress={() => saveBase64ToGallery(item.content)}
+        onPress={() => saveImageToGallery(item.content.url, item.content.name)}
       >
         <LinearGradient
           colors={["#4facfe", "#00f2fe"]}

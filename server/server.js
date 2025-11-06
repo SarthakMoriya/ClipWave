@@ -29,6 +29,8 @@ app.use("/uploads", express.static(APK_DIR));
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/upload", require("./routes/uploadRoutes"));
+
 
 // Socket.io connection handler
 require("./sockets/sockethandler")(io);

@@ -66,7 +66,7 @@ function establishSocketConnection() {
   // Run checks every 5s
   setInterval(() => {
     checkClipBoard();
-    checkImage();
+    // checkImage();
     checkForApkFiles();
   }, 5000);
 }
@@ -97,7 +97,7 @@ function checkImage() {
       previousImgBase64 = base64Image;
     }
   }else{
-    console.log('Empty Clipboard...')
+    // console.log('Empty Clipboard...')
   }
 }
 

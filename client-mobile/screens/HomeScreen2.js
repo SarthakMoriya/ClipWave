@@ -16,8 +16,6 @@ import * as Clipboard from "expo-clipboard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch, useSelector } from "react-redux";
-import * as FileSystem from "expo-file-system";
-import * as MediaLibrary from "expo-media-library";
 import { LinearGradient } from "expo-linear-gradient";
 import Sidebar from "../components/Sidebar";
 import { closeNav, openNav } from "../store/states";
@@ -29,11 +27,11 @@ import VideosClipboard from "./VideosClipboard";
 import PdfsClipboard from "./PdfsClipboard";
 import TextClipboard from "./TextClipboard";
 import ImagesClipboard from "./ImagesClipboard";
-
-const { width, height } = Dimensions.get("window");
+import FilePickerModal from "./FilePickerModal";
 
 const HomeScreen2 = () => {
   const [user, setUser] = useState(null);
+  const [openSubMenuTab, setOpenSubMenuTab] = useState(false);
   const dispatch = useDispatch();
   const logs = useSelector((state) => state.log.log);
   const type = useSelector((state) => state.log.type);
@@ -44,6 +42,7 @@ const HomeScreen2 = () => {
       const token = await AsyncStorage.getItem("token");
       setUser(token);
     };
+    console.log(logs);
     fetchToken();
   }, []);
 
@@ -125,7 +124,7 @@ const HomeScreen2 = () => {
 
   const renderClipboardCard = (item, i) => {
     const typeInfo = getContentTypeInfo(item.type);
-
+    console.log(`TYPE::${typeInfo}`);
     return (
       <TouchableOpacity
         key={i}
@@ -160,34 +159,19 @@ const HomeScreen2 = () => {
           {/* Card Content */}
           <View style={styles.cardContent}>
             {(item.type === 1 || item.type === 3) && (
-              <TextClipboard numberOfLines={4} content={item.content}/>
+              <TextClipboard numberOfLines={4} content={item.content} />
             )}
 
-            {item.type === 2 && (
-              <ImagesClipboard item={item}/>
+            {(item.type === 2 || item.type === 7) && (
+              <ImagesClipboard item={item} />
             )}
-
             {item.type === 6 && renderFileInfo(item.content)}
-
-            {item.type === 4  && (
-              <PdfsClipboard item={item} color={typeInfo.color}/>
+            {item.type === 4 && (
+              <PdfsClipboard item={item} color={typeInfo.color} />
             )}
 
             {/* VIDEOS */}
-            {(item.type === 5) && (
-              // <View style={styles.mediaContainer}>
-              //   <Icon
-              //     name="play-outline"
-              //     size={32}
-              //     color={typeInfo.color}
-              //   />
-              //   <Text style={styles.mediaText}>
-              //     Video File
-              //   </Text>
-              //   <Text style={styles.mediaSubtext}>Tap to open or copy</Text>
-              // </View>
-              <VideosClipboard item={item}/>
-            )}
+            {item.type === 5 && <VideosClipboard item={item} />}
           </View>
 
           {/* Card Footer */}
@@ -210,20 +194,22 @@ const HomeScreen2 = () => {
                   </Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity
-                style={[
-                  styles.miniButton,
-                  { backgroundColor: typeInfo.bgColor },
-                ]}
-                onPress={() => handleContentPress(item)}
-              >
-                <Icon name="copy-outline" size={14} color={typeInfo.color} />
-                <Text
-                  style={[styles.miniButtonText, { color: typeInfo.color }]}
+              {[1, 3].includes(item.type) && (
+                <TouchableOpacity
+                  style={[
+                    styles.miniButton,
+                    { backgroundColor: typeInfo.bgColor },
+                  ]}
+                  onPress={() => handleContentPress(item)}
                 >
-                  Copy
-                </Text>
-              </TouchableOpacity>
+                  <Icon name="copy-outline" size={14} color={typeInfo.color} />
+                  <Text
+                    style={[styles.miniButtonText, { color: typeInfo.color }]}
+                  >
+                    Copy
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </LinearGradient>
@@ -242,7 +228,10 @@ const HomeScreen2 = () => {
     </TouchableOpacity>
   );
 
-
+  const openSubMenu = () => {
+    console.log("hr");
+    setOpenSubMenuTab(!openSubMenuTab);
+  };
 
   const filteredLogs = logs.filter((item) => type === item.type);
 
@@ -258,7 +247,7 @@ const HomeScreen2 = () => {
             <Text style={styles.headerTitle}>ClipWave</Text>
             <Text style={styles.headerSubtitle}>My Clipboard</Text>
           </View>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} onPress={openSubMenu}>
             <Icon name="add" size={24} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
@@ -300,6 +289,12 @@ const HomeScreen2 = () => {
           </View>
         </TouchableWithoutFeedback>
       </LinearGradient>
+      {openSubMenuTab && (
+        <FilePickerModal
+          visible={openSubMenuTab}
+          onClose={() => setOpenSubMenuTab(false)}
+        />
+      )}
     </SafeAreaView>
   );
 };

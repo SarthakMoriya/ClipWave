@@ -52,6 +52,8 @@ const SocketManager = () => {
             console.log(`Video received ${url}::${name}`)
             dispatch(addLog({ payload: { url, name }, type: 5 }));
           } else if (mimeType.startsWith("image/")) {
+            console.log('adding image the 2nd way')
+            dispatch(addLog({ payload: { url, name }, type: 2 }));
           } else if(mimeType.startsWith("application/pdf")) {
             console.log("Adding PDF...")
             dispatch(addLog({ payload: { url, name }, type: 4 }));

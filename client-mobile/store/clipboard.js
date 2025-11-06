@@ -11,6 +11,7 @@ export const logSlice = createSlice({
   reducers: {
     addLog: (state, { payload }) => {
       console.log(state.log)
+      console.log(payload)
       if (payload.payload)
         state.log.push({ content: payload.payload, type: payload.type });
     },
