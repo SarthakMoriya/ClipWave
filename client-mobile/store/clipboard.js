@@ -10,6 +10,7 @@ export const logSlice = createSlice({
   initialState,
   reducers: {
     addLog: (state, { payload }) => {
+      console.log(state.log)
       if (payload.payload)
         state.log.push({ content: payload.payload, type: payload.type });
     },
@@ -20,7 +21,6 @@ export const logSlice = createSlice({
       state.type = payload;
     },
     removeLogs: (state, payload) => {
-      console.log(payload)
       switch (payload.type) {
         case 1:
           state.log = state.log.filter((log) => log.type !== 1);

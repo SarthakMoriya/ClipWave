@@ -37,22 +37,24 @@ const SocketManager = () => {
         try {
           const fileUri = `${FileSystem.documentDirectory}${name}`;
 
-          // const { uri } = await FileSystem.downloadAsync(url, fileUri);
           const { uri } = await FileSystem.downloadAsync(url, fileUri);
           console.log(`URI:${uri}`);
           console.log(`MIME TYPE:${mimeType}`);
 
-          await Sharing.shareAsync(uri, {
-            mimeType,
-            dialogTitle: "Open file with...",
-          });
+          // await Sharing.shareAsync(uri, {
+          //   mimeType,
+          //   dialogTitle: "Open file with...",
+          // });
 
           if (mimeType === "application/vnd.android.package-archive") {
             dispatch(addLog({ payload: { url, name }, type: 6 }));
           } else if (mimeType.startsWith("video/")) {
+            console.log(`Video received ${url}::${name}`)
             dispatch(addLog({ payload: { url, name }, type: 5 }));
           } else if (mimeType.startsWith("image/")) {
-          } else {
+          } else if(mimeType.startsWith("application/pdf")) {
+            console.log("Adding PDF...")
+            dispatch(addLog({ payload: { url, name }, type: 4 }));
           }
 
           console.log(`✅ Opened ${name} (${mimeType})`);

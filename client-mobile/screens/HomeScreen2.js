@@ -25,6 +25,10 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { removeLogs } from "../store/clipboard";
 import { Button } from "react-native";
 import styles from "../styles/HomeScreen2.styles";
+import VideosClipboard from "./VideosClipboard";
+import PdfsClipboard from "./PdfsClipboard";
+import TextClipboard from "./TextClipboard";
+import ImagesClipboard from "./ImagesClipboard";
 
 const { width, height } = Dimensions.get("window");
 
@@ -156,62 +160,33 @@ const HomeScreen2 = () => {
           {/* Card Content */}
           <View style={styles.cardContent}>
             {(item.type === 1 || item.type === 3) && (
-              <Text style={styles.textContent} numberOfLines={4}>
-                {item.content}
-              </Text>
+              <TextClipboard numberOfLines={4} content={item.content}/>
             )}
 
             {item.type === 2 && (
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: item.content }}
-                  style={styles.imageContent}
-                  resizeMode="cover"
-                />
-                <TouchableOpacity
-                  style={styles.downloadButton}
-                  onPress={() => saveBase64ToGallery(item.content)}
-                >
-                  <LinearGradient
-                    colors={["#4facfe", "#00f2fe"]}
-                    style={styles.downloadGradient}
-                  >
-                    <Icon name="download-outline" size={16} color="#fff" />
-                    <Text style={styles.downloadText}>Save Image</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              </View>
+              <ImagesClipboard item={item}/>
             )}
 
             {item.type === 6 && renderFileInfo(item.content)}
 
-            {(item.type === 4 || item.type === 5) && (
-              <View style={styles.mediaContainer}>
-                <Icon
-                  name={item.type === 4 ? "document-outline" : "play-outline"}
-                  size={32}
-                  color={typeInfo.color}
-                />
-                <Text style={styles.mediaText}>
-                  {item.type === 4 ? "PDF Document" : "Video File"}
-                </Text>
-                <Text style={styles.mediaSubtext}>Tap to open or copy</Text>
-              </View>
+            {item.type === 4  && (
+              <PdfsClipboard item={item} color={typeInfo.color}/>
             )}
 
             {/* VIDEOS */}
             {(item.type === 5) && (
-              <View style={styles.mediaContainer}>
-                <Icon
-                  name="play-outline"
-                  size={32}
-                  color={typeInfo.color}
-                />
-                <Text style={styles.mediaText}>
-                  Video File
-                </Text>
-                <Text style={styles.mediaSubtext}>Tap to open or copy</Text>
-              </View>
+              // <View style={styles.mediaContainer}>
+              //   <Icon
+              //     name="play-outline"
+              //     size={32}
+              //     color={typeInfo.color}
+              //   />
+              //   <Text style={styles.mediaText}>
+              //     Video File
+              //   </Text>
+              //   <Text style={styles.mediaSubtext}>Tap to open or copy</Text>
+              // </View>
+              <VideosClipboard item={item}/>
             )}
           </View>
 
@@ -267,33 +242,7 @@ const HomeScreen2 = () => {
     </TouchableOpacity>
   );
 
-  const saveBase64ToGallery = async (base64Data) => {
-    try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission denied",
-          "Allow access to media to save image."
-        );
-        return;
-      }
 
-      const base64 = base64Data.replace(/^data:image\/\w+;base64,/, "");
-      const fileUri = FileSystem.documentDirectory + "downloadedImage.jpg";
-
-      await FileSystem.writeAsStringAsync(fileUri, base64, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      const asset = await MediaLibrary.createAssetAsync(fileUri);
-      await MediaLibrary.createAlbumAsync("Download", asset, false);
-
-      Alert.alert("Success", "Image saved to gallery!");
-    } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "Failed to save image.");
-    }
-  };
 
   const filteredLogs = logs.filter((item) => type === item.type);
 

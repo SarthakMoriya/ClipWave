@@ -9,17 +9,17 @@ parentPort.on("message", () => {
   try {
     const files = clipboardEx.readFilePaths();
     if (!files.length) {
-      parentPort.postMessage({ success: false, error: "No APK/File found" });
+      // parentPort.postMessage({ success: false, error: "No APK/File found" });
       return;
     }
 
     const filePath = files[0];
     console.log(`Copied File path::${filePath}`);
     if (filePath === lastFilePath) {
-      parentPort.postMessage({
-        success: false,
-        error: "Same file/apk as last, skipping",
-      });
+      // parentPort.postMessage({
+      //   success: false,
+      //   error: "Same file/apk as last, skipping",
+      // });
       return;
     }
 

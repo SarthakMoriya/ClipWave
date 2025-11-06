@@ -27,6 +27,7 @@ function initApkWorker() {
     // const fileData = result.fileData;
     const totalChunks = Math.ceil(fileData.length / CHUNK_SIZE);
 
+    // saves to server's upload folder
     for (let i = 0; i < totalChunks; i++) {
       const chunk = fileData.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
       socket.emit("clipboard-apk-chunk", {
@@ -38,6 +39,7 @@ function initApkWorker() {
       });
     }
 
+    // sends filename so clients can request that file in uploads folder
     socket.emit("clipboard-apk-complete", {
       fileName: result.fileName,
       mimeType: result.mimeType,
@@ -94,6 +96,8 @@ function checkImage() {
       socket.emit("clipboard-img", base64Image);
       previousImgBase64 = base64Image;
     }
+  }else{
+    console.log('Empty Clipboard...')
   }
 }
 

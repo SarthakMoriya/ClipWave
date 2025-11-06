@@ -41,7 +41,7 @@ module.exports = (io) => {
       if (mimeType === "application/mp4") mimeType = "video/mp4";
       if (mimeType === "application/mpeg") mimeType = "video/mpeg";
 
-      console.log(mimeType);
+      console.log(`Final MIME type: ${mimeType}`)
       delete files[fileName];
       socket.broadcast.emit("new-apk-available", {
         fileName,
