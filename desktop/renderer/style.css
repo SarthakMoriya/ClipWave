@@ -1,0 +1,40 @@
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #121212;
+    color: white;
+}
+
+#topbar {
+    padding: 10px;
+    background: #1f1f1f;
+}
+
+#container {
+    display: flex;
+    height: 80vh;
+}
+
+#feed {
+    flex: 3;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+#devices {
+    flex: 1;
+    border-left: 1px solid #333;
+    padding: 10px;
+}
+
+.item {
+    background: #1e1e1e;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+#controls {
+    padding: 10px;
+    background: #1f1f1f;
+}

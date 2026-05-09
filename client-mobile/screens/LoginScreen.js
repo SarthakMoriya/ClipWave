@@ -11,10 +11,12 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { useSelector } from "react-redux";
 const { width, height } = Dimensions.get("window");
 
 const LoginScreen = ({ navigation }) => {
+  const ip = useSelector((state) => state.extra.ip);
+
   const [email, setEmail] = useState("test@gmail.com");
   const [password, setPassword] = useState("test");
   const [emailFocused, setEmailFocused] = useState(false);
@@ -23,7 +25,8 @@ const LoginScreen = ({ navigation }) => {
   const onLoginPress = async () => {
     if (email && password) {
       try {
-        const response = await fetch("http://192.168.1.15:3000/api/auth/login", {
+        console.log(`IP IN LOGIN SCREEN : ${ip}`);
+        const response = await fetch(`http://${ip}:3000/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),

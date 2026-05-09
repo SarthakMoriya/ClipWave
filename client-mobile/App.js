@@ -15,7 +15,7 @@ async function listFiles() {
   try {
     console.log("ttt", FileSystem.documentDirectory);
     const files = await FileSystem.readDirectoryAsync(
-      FileSystem.documentDirectory
+      FileSystem.documentDirectory,
     );
     console.log("📂 Files in Expo storage:", files);
   } catch (error) {
@@ -29,7 +29,7 @@ const requestStoragePermission = async () => {
   listFiles();
   if (Platform.OS === "android") {
     const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
     );
     return granted === PermissionsAndroid.RESULTS.GRANTED;
   }

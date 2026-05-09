@@ -7,21 +7,25 @@ module.exports = (io) => {
     socket.on("clipboard", (data) => {
       console.log("Clipboard data received:", data);
       socket.broadcast.emit("clipboard", data);
+      socket.emit("clipboard", data);
     });
     // Clipboard sharing functionality
     socket.on("clipboard-img", (data) => {
       console.log("Clipboard Img received:", data);
       socket.broadcast.emit("clipboard-img", data);
+      socket.emit("clipboard-img", data);
     });
     // Clipboard sharing functionality
     socket.on("clipboard-url", (data) => {
       console.log("Clipboard url received:", data);
       socket.broadcast.emit("clipboard-url", data);
+      socket.emit("clipboard-url", data);
     });
     // Clipboard sharing functionality
     socket.on("clipboard-apk", (data) => {
       console.log("Clipboard apk received:", data);
       socket.broadcast.emit("clipboard-apk", data);
+      socket.emit("clipboard-apk", data);
     });
 
     const files = {};
@@ -41,12 +45,12 @@ module.exports = (io) => {
       if (mimeType === "application/mp4") mimeType = "video/mp4";
       if (mimeType === "application/mpeg") mimeType = "video/mpeg";
 
-      console.log(`Final MIME type: ${mimeType}`)
+      console.log(`Final MIME type: ${mimeType}`);
       delete files[fileName];
       socket.broadcast.emit("new-apk-available", {
         fileName,
         name: fileName,
-        url: `http://192.168.1.15:3000/uploads/${fileName}`,
+        url: `http://192.168.29.22:3000/uploads/${fileName}`,
         mimeType,
       });
     });
@@ -63,6 +67,11 @@ module.exports = (io) => {
       //   console.log('Socket authentication failed');
       //   socket.disconnect();
       // }
+    });
+
+    socket.on("device-info", (data) => {
+      console.log("Device info received:", data);
+      socket.broadcast.emit("device-info", data);
     });
 
     socket.on("disconnect", () => {

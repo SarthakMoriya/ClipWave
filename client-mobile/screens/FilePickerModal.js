@@ -127,7 +127,7 @@ const FilePickerModal = ({ visible, onClose }) => {
         type: fileType,
       });
 
-      const response = await fetch("http://192.168.1.15:3000/api/upload", {
+      const response = await fetch("http://192.168.29.22:3000/api/upload", {
         method: "POST",
         body: formData,
         headers: {

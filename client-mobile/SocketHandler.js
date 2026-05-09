@@ -1,20 +1,22 @@
 // src/components/SocketManager.js
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import * as FileSystem from "expo-file-system";
 import * as IntentLauncher from "expo-intent-launcher";
 import { addLog } from "./store/clipboard";
 import * as Sharing from "expo-sharing";
+import * as Device from "expo-device";
 
 let socket;
 
 const SocketManager = () => {
   const dispatch = useDispatch();
+  const ip = useSelector((state) => state.extra.ip);
 
   useEffect(() => {
     // socket = io("http://192.168.1.14:3000");
-    socket = io("http://192.168.1.15:3000");
+    socket = io(`http://${ip}:3000`);
 
     socket.on("connect", () => {
       console.log("Connected to Socket");
@@ -31,6 +33,10 @@ const SocketManager = () => {
     socket.on("clipboard-url", (data) => {
       console.log("COPIED URL RECEIVED", data);
       dispatch(addLog({ payload: data, type: 3 }));
+    });
+    socket.emit("device-info", {
+      deviceName: Device.deviceName,
+      modelName: Device.modelName,
     });
     try {
       socket.on("new-apk-available", async ({ url, name, mimeType }) => {
@@ -49,13 +55,13 @@ const SocketManager = () => {
           if (mimeType === "application/vnd.android.package-archive") {
             dispatch(addLog({ payload: { url, name }, type: 6 }));
           } else if (mimeType.startsWith("video/")) {
-            console.log(`Video received ${url}::${name}`)
+            console.log(`Video received ${url}::${name}`);
             dispatch(addLog({ payload: { url, name }, type: 5 }));
           } else if (mimeType.startsWith("image/")) {
-            console.log('adding image the 2nd way')
+            console.log("adding image the 2nd way");
             dispatch(addLog({ payload: { url, name }, type: 2 }));
-          } else if(mimeType.startsWith("application/pdf")) {
-            console.log("Adding PDF...")
+          } else if (mimeType.startsWith("application/pdf")) {
+            console.log("Adding PDF...");
             dispatch(addLog({ payload: { url, name }, type: 4 }));
           }
 

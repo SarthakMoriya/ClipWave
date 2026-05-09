@@ -2,6 +2,12 @@ const readApk = require("./readApk");
 const { app, clipboard } = require("electron");
 const { io } = require("socket.io-client");
 const { Worker } = require("worker_threads");
+const { BrowserWindow } = require("electron");
+
+const utils = require("./utils");
+
+let mainWindow;
+let devices = [];
 
 let socket;
 let apkWorker;
@@ -51,16 +57,76 @@ function initApkWorker() {
   });
 }
 
-function establishSocketConnection() {
-  socket = io("http://192.168.1.15:3000");
-  // socket = io("http://192.168.1.14:3000");
+async function establishSocketConnection() {
+  const ip = await utils.getIp();
+  console.log(`IP:${ip}`);
+  socket = io(`http://${ip}:3000`);
 
   socket.on("connect", () => {
     console.log("✅ Connected to Socket");
+    mainWindow.webContents.send("status", "connected");
   });
 
   socket.on("clipboard", (data) => {
     console.log("📋 Clipboard data received:", data);
+    mainWindow.webContents.send("activity", {
+      type: "text",
+      data: data,
+    });
+  });
+
+  socket.on("clipboard-url", (data) => {
+    console.log("📋 Clipboard data received:", data);
+    mainWindow.webContents.send("activity", {
+      type: "url",
+      data: data,
+    });
+  });
+
+  socket.on("clipboard-img", (data) => {
+    console.log("📋 Clipboard data received:", data);
+    mainWindow.webContents.send("activity", {
+      type: "image",
+      data: data,
+    });
+  });
+
+  socket.on("clipboard-apk", (data) => {
+    console.log("📋 Clipboard data received:", data);
+    mainWindow.webContents.send("activity", {
+      type: "apk",
+      data: data,
+    });
+  });
+
+  socket.on("clipboard-apk-chunk", (data) => {
+    console.log("📋 Clipboard data received:", data);
+    mainWindow.webContents.send("activity", {
+      type: "apk-chunk",
+      data: data,
+    });
+  });
+
+  socket.on("clipboard-apk-complete", (data) => {
+    console.log("📋 Clipboard data received:", data);
+    mainWindow.webContents.send("activity", {
+      type: "apk-complete",
+      data: data,
+    });
+  });
+
+  socket.on("device-info", (data) => {
+    console.log("Device info received:", data);
+    devices.push({ ...data });
+    mainWindow.webContents.send("device-list", {
+      type: "device-info",
+      data: devices,
+    });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ Disconnected from Socket");
+    mainWindow.webContents.send("status", "disconnected");
   });
 
   // Run checks every 5s
@@ -96,7 +162,7 @@ function checkImage() {
       socket.emit("clipboard-img", base64Image);
       previousImgBase64 = base64Image;
     }
-  }else{
+  } else {
     // console.log('Empty Clipboard...')
   }
 }
@@ -111,7 +177,21 @@ function checkForApkFiles() {
   apkWorker.postMessage("read");
 }
 
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1000,
+    height: 700,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  });
+
+  mainWindow.loadFile("renderer/index.html");
+}
+
 app.whenReady().then(() => {
+  createWindow();
   initApkWorker();
   establishSocketConnection();
 });
