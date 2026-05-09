@@ -46,10 +46,14 @@ export const logSlice = createSlice({
           return;
       }
     },
+    clearLogs: (state) => {
+      state.log = [];
+      state.type = 1;
+    },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { addLog, removeLog, setType,removeLogs } = logSlice.actions;
+export const { addLog, removeLog, setType, removeLogs, clearLogs } = logSlice.actions;
 
 export default logSlice.reducer;

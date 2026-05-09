@@ -50,7 +50,7 @@ module.exports = (io) => {
       socket.broadcast.emit("new-apk-available", {
         fileName,
         name: fileName,
-        url: `http://192.168.29.22:3000/uploads/${fileName}`,
+        url: `http://192.168.0.106:3000/uploads/${fileName}`,
         mimeType,
       });
     });

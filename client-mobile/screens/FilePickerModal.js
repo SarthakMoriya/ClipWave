@@ -15,11 +15,13 @@ import * as ImagePicker from "expo-image-picker";
 import Icon from "react-native-vector-icons/Ionicons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Platform } from "react-native";
-import { BlurView } from 'expo-blur';
+import { BlurView } from "expo-blur";
+import { useSelector } from "react-redux";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const FilePickerModal = ({ visible, onClose }) => {
+  const ip = useSelector((state) => state.extra.ip);
   const [loading, setLoading] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [type, setType] = useState(null);
@@ -84,7 +86,7 @@ const FilePickerModal = ({ visible, onClose }) => {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['videos'],
+        mediaTypes: ["videos"],
         quality: 1,
       });
       setLoading(false);
@@ -127,7 +129,7 @@ const FilePickerModal = ({ visible, onClose }) => {
         type: fileType,
       });
 
-      const response = await fetch("http://192.168.29.22:3000/api/upload", {
+      const response = await fetch(`http://${ip}:3000/api/upload`, {
         method: "POST",
         body: formData,
         headers: {
@@ -168,14 +170,14 @@ const FilePickerModal = ({ visible, onClose }) => {
           ) : (
             <View style={styles.optionsContainer}>
               {/* Image Option */}
-              <TouchableOpacity 
-                style={styles.optionCard} 
+              <TouchableOpacity
+                style={styles.optionCard}
                 onPress={pickImage}
                 activeOpacity={0.7}
               >
                 <View style={styles.iconContainer}>
                   <LinearGradient
-                    colors={['#F59E0B', '#D97706']}
+                    colors={["#F59E0B", "#D97706"]}
                     style={styles.iconGradient}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
@@ -191,14 +193,14 @@ const FilePickerModal = ({ visible, onClose }) => {
               </TouchableOpacity>
 
               {/* Video Option */}
-              <TouchableOpacity 
-                style={styles.optionCard} 
+              <TouchableOpacity
+                style={styles.optionCard}
                 onPress={pickMedia}
                 activeOpacity={0.7}
               >
                 <View style={styles.iconContainer}>
                   <LinearGradient
-                    colors={['#FBBF24', '#F59E0B']}
+                    colors={["#FBBF24", "#F59E0B"]}
                     style={styles.iconGradient}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
@@ -214,14 +216,14 @@ const FilePickerModal = ({ visible, onClose }) => {
               </TouchableOpacity>
 
               {/* Document Option */}
-              <TouchableOpacity 
-                style={styles.optionCard} 
+              <TouchableOpacity
+                style={styles.optionCard}
                 onPress={pickDocument}
                 activeOpacity={0.7}
               >
                 <View style={styles.iconContainer}>
                   <LinearGradient
-                    colors={['#FCD34D', '#FBBF24']}
+                    colors={["#FCD34D", "#FBBF24"]}
                     style={styles.iconGradient}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
@@ -243,7 +245,7 @@ const FilePickerModal = ({ visible, onClose }) => {
             <View style={styles.previewSection}>
               <View style={styles.divider} />
               <Text style={styles.previewLabel}>Selected File</Text>
-              
+
               <View style={styles.previewCard}>
                 {type === 7 && (
                   <Image
@@ -253,14 +255,14 @@ const FilePickerModal = ({ visible, onClose }) => {
                 )}
                 {type !== 7 && (
                   <View style={styles.fileIconContainer}>
-                    <Icon 
-                      name={type === 5 ? "videocam" : "document"} 
-                      size={32} 
-                      color="#F59E0B" 
+                    <Icon
+                      name={type === 5 ? "videocam" : "document"}
+                      size={32}
+                      color="#F59E0B"
                     />
                   </View>
                 )}
-                
+
                 <View style={styles.fileInfo}>
                   <Text style={styles.fileName} numberOfLines={1}>
                     {selectedItem.name || "Selected File"}
@@ -279,7 +281,7 @@ const FilePickerModal = ({ visible, onClose }) => {
                 activeOpacity={0.8}
               >
                 <LinearGradient
-                  colors={['#F59E0B', '#D97706']}
+                  colors={["#F59E0B", "#D97706"]}
                   style={styles.shareGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
@@ -292,8 +294,8 @@ const FilePickerModal = ({ visible, onClose }) => {
           )}
 
           {/* Cancel Button */}
-          <TouchableOpacity 
-            style={styles.cancelButton} 
+          <TouchableOpacity
+            style={styles.cancelButton}
             onPress={onClose}
             activeOpacity={0.7}
           >

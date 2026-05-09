@@ -9,7 +9,9 @@ import {
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useDispatch } from "react-redux";
-import { setType } from "../store/clipboard";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { setType, clearLogs } from "../store/clipboard";
 import { closeNav } from "../store/states";
 
 const data = [
@@ -24,6 +26,7 @@ const data = [
 
 const Sidebar = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
 
   const onClose = () => {
     dispatch(closeNav());
@@ -69,7 +72,16 @@ const Sidebar = () => {
     </View>
   );
 
-  const handleSignOut = () => console.log("User signed out");
+  const handleSignOut = async () => {
+    try {
+      await AsyncStorage.removeItem("token");
+      dispatch(clearLogs());
+      dispatch(closeNav());
+      navigation.replace("Login");
+    } catch (error) {
+      console.error("Error during sign out:", error);
+    }
+  };
 
   const renderFooter = () => (
     <View style={styles.footer}>
@@ -78,7 +90,13 @@ const Sidebar = () => {
         <Text style={styles.settingsText}>Settings</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.helpButton}>
+      <TouchableOpacity 
+        style={styles.helpButton}
+        onPress={() => {
+          dispatch(closeNav());
+          navigation.navigate("HelpSupport");
+        }}
+      >
         <Ionicons name="help-circle-outline" size={20} color="#9CA3AF" />
         <Text style={styles.helpText}>Help & Support</Text>
       </TouchableOpacity>

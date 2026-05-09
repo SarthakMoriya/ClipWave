@@ -6,6 +6,7 @@ import { PermissionsAndroid, Platform } from "react-native";
 import LoginScreen from "./screens/LoginScreen";
 import HomeScreen2 from "./screens/HomeScreen2";
 import SignupScreen from "./screens/SignupScreen";
+import HelpSupportScreen from "./screens/HelpSupportScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { store } from "./store/store";
 import { Provider } from "react-redux";
@@ -67,6 +68,11 @@ export default function App() {
           <Stack.Screen
             name="Signup"
             component={SignupScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="HelpSupport"
+            component={HelpSupportScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

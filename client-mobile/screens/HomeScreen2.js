@@ -48,13 +48,48 @@ const HomeScreen2 = () => {
 
   const getContentTypeInfo = (type) => {
     const typeMap = {
-      1: { icon: "document-text", name: "Text", color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.15)" },
-      2: { icon: "image", name: "Image", color: "#FBBF24", bgColor: "rgba(251, 191, 36, 0.15)" },
-      3: { icon: "link", name: "Link", color: "#FCD34D", bgColor: "rgba(252, 211, 77, 0.15)" },
-      4: { icon: "document", name: "PDF", color: "#F59E0B", bgColor: "rgba(245, 158, 11, 0.15)" },
-      5: { icon: "videocam", name: "Video", color: "#D97706", bgColor: "rgba(217, 119, 6, 0.15)" },
-      6: { icon: "folder", name: "APK", color: "#FBBF24", bgColor: "rgba(251, 191, 36, 0.15)" },
-      7: { icon: "images", name: "Gallery", color: "#FCD34D", bgColor: "rgba(252, 211, 77, 0.15)" },
+      1: {
+        icon: "document-text",
+        name: "Text",
+        color: "#F59E0B",
+        bgColor: "rgba(245, 158, 11, 0.15)",
+      },
+      2: {
+        icon: "image",
+        name: "Image",
+        color: "#FBBF24",
+        bgColor: "rgba(251, 191, 36, 0.15)",
+      },
+      3: {
+        icon: "link",
+        name: "Link",
+        color: "#FCD34D",
+        bgColor: "rgba(252, 211, 77, 0.15)",
+      },
+      4: {
+        icon: "document",
+        name: "PDF",
+        color: "#F59E0B",
+        bgColor: "rgba(245, 158, 11, 0.15)",
+      },
+      5: {
+        icon: "videocam",
+        name: "Video",
+        color: "#D97706",
+        bgColor: "rgba(217, 119, 6, 0.15)",
+      },
+      6: {
+        icon: "folder",
+        name: "APK",
+        color: "#FBBF24",
+        bgColor: "rgba(251, 191, 36, 0.15)",
+      },
+      7: {
+        icon: "images",
+        name: "Gallery",
+        color: "#FCD34D",
+        bgColor: "rgba(252, 211, 77, 0.15)",
+      },
     };
     return (
       typeMap[type] || {
@@ -72,7 +107,9 @@ const HomeScreen2 = () => {
         <View style={styles.fileInfo}>
           <Icon name="document-attach" size={32} color="#F59E0B" />
           <View style={styles.fileDetails}>
-            <Text style={styles.fileName} numberOfLines={1}>{content.name}</Text>
+            <Text style={styles.fileName} numberOfLines={1}>
+              {content.name}
+            </Text>
             <Text style={styles.fileUrl} numberOfLines={1}>
               {content.url}
             </Text>
@@ -107,7 +144,7 @@ const HomeScreen2 = () => {
         ]);
       } else {
         await Clipboard.setStringAsync(
-          typeof content === "string" ? content : JSON.stringify(content)
+          typeof content === "string" ? content : JSON.stringify(content),
         );
         ToastAndroid.show("Copied to clipboard", ToastAndroid.SHORT);
       }
@@ -123,7 +160,7 @@ const HomeScreen2 = () => {
 
   const renderClipboardCard = (item, i) => {
     const typeInfo = getContentTypeInfo(item.type);
-    
+
     return (
       <TouchableOpacity
         key={i}
@@ -133,13 +170,18 @@ const HomeScreen2 = () => {
       >
         {/* Card Header */}
         <View style={styles.cardHeader}>
-          <View style={[styles.typeIndicator, { backgroundColor: typeInfo.bgColor }]}>
+          <View
+            style={[
+              styles.typeIndicator,
+              { backgroundColor: typeInfo.bgColor },
+            ]}
+          >
             <Icon name={typeInfo.icon} size={18} color={typeInfo.color} />
             <Text style={[styles.typeText, { color: typeInfo.color }]}>
               {typeInfo.name}
             </Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.actionButton}
             onPress={() => handleContentPress(item)}
           >
@@ -149,6 +191,15 @@ const HomeScreen2 = () => {
 
         {/* Card Content */}
         <View style={styles.cardContent}>
+          {item.type === 0 && (
+            <>
+              <TextClipboard numberOfLines={4} content={item.content} />
+              <ImagesClipboard item={item} />
+              <PdfsClipboard item={item} color={typeInfo.color} />
+              <VideosClipboard item={item} />
+              <FilePickerModal item={item} />
+            </>
+          )}
           {(item.type === 1 || item.type === 3) && (
             <TextClipboard numberOfLines={4} content={item.content} />
           )}
@@ -156,9 +207,9 @@ const HomeScreen2 = () => {
           {(item.type === 2 || item.type === 7) && (
             <ImagesClipboard item={item} />
           )}
-          
+
           {item.type === 6 && renderFileInfo(item.content)}
-          
+
           {item.type === 4 && (
             <PdfsClipboard item={item} color={typeInfo.color} />
           )}
@@ -209,7 +260,9 @@ const HomeScreen2 = () => {
     setOpenSubMenuTab(!openSubMenuTab);
   };
 
-  const filteredLogs = logs.filter((item) => type === item.type);
+  const filteredLogs = logs.filter((item) =>
+    type === 0 ? true : item.type === type,
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -217,10 +270,7 @@ const HomeScreen2 = () => {
         {isOpen && <Sidebar />}
 
         {/* Header with Gradient */}
-        <LinearGradient
-          colors={['#111827', '#1F2937']}
-          style={styles.header}
-        >
+        <LinearGradient colors={["#111827", "#1F2937"]} style={styles.header}>
           <View style={styles.headerTop}>
             {BackAction()}
             <View style={styles.headerContent}>
@@ -229,7 +279,7 @@ const HomeScreen2 = () => {
             </View>
             <TouchableOpacity style={styles.addButton} onPress={openSubMenu}>
               <LinearGradient
-                colors={['#F59E0B', '#D97706']}
+                colors={["#F59E0B", "#D97706"]}
                 style={styles.addButtonGradient}
               >
                 <Icon name="add" size={24} color="#000" />
@@ -259,11 +309,15 @@ const HomeScreen2 = () => {
               <View style={styles.welcomeSection}>
                 <Text style={styles.welcomeText}>My Clipboard</Text>
                 <Text style={styles.welcomeSubtext}>
-                  {filteredLogs.length} {filteredLogs.length === 1 ? 'item' : 'items'} stored
+                  {filteredLogs.length}{" "}
+                  {filteredLogs.length === 1 ? "item" : "items"} stored
                 </Text>
               </View>
               {filteredLogs.length > 0 && (
-                <TouchableOpacity style={styles.clearButton} onPress={clearLogs}>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={clearLogs}
+                >
                   <Icon name="trash-outline" size={16} color="#EF4444" />
                   <Text style={styles.clearButtonText}>Clear</Text>
                 </TouchableOpacity>
@@ -280,10 +334,17 @@ const HomeScreen2 = () => {
                 <View style={styles.emptyState}>
                   <View style={styles.emptyIconContainer}>
                     <LinearGradient
-                      colors={['rgba(245, 158, 11, 0.2)', 'rgba(217, 119, 6, 0.1)']}
+                      colors={[
+                        "rgba(245, 158, 11, 0.2)",
+                        "rgba(217, 119, 6, 0.1)",
+                      ]}
                       style={styles.emptyIconGradient}
                     >
-                      <Icon name="clipboard-outline" size={64} color="#F59E0B" />
+                      <Icon
+                        name="clipboard-outline"
+                        size={64}
+                        color="#F59E0B"
+                      />
                     </LinearGradient>
                   </View>
                   <Text style={styles.emptyTitle}>No items yet</Text>
