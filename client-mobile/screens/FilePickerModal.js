@@ -17,6 +17,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import { useSelector } from "react-redux";
+import { socket } from "../SocketHandler";
 
 const { width } = Dimensions.get("window");
 
@@ -139,6 +140,15 @@ const FilePickerModal = ({ visible, onClose }) => {
 
       const data = await response.json();
       console.log("✅ Uploaded:", data);
+
+      // 🔔 Notify other devices via Socket
+      if (socket) {
+        socket.emit("file-uploaded", {
+          name: data.file.name,
+          url: data.file.url,
+          mimeType: fileType,
+        });
+      }
 
       Alert.alert("Success", "File shared successfully!");
       setSelectedItem(null);

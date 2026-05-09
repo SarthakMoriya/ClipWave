@@ -2,7 +2,10 @@
 <html>
 
 <head>
-    <title>Clipboard Hub</title>
+    <title>ClipWave Desktop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
 </head>
 
@@ -10,6 +13,10 @@
 
     <!-- TOP BAR -->
     <div id="topbar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="background: #F59E0B; padding: 8px; border-radius: 8px; color: black; font-weight: 800; font-size: 18px;">CW</div>
+            <h2 style="margin: 0; font-size: 18px;">ClipWave Hub</h2>
+        </div>
         <span id="status">🔴 Disconnected</span>
     </div>
 
@@ -17,16 +24,15 @@
     <div id="container">
 
         <!-- LEFT: Activity -->
-        <div id="feed"></div>
+        <div id="feed">
+            <!-- Items will be injected here -->
+        </div>
 
         <!-- RIGHT: Devices -->
         <div id="devices">
-            <h3>Devices</h3>
+            <h3>Connected Devices</h3>
             <div id="deviceList">
-                <!-- <div class="device-item">
-                    <span class="device-name">My Phone</span>
-                    <span class="device-status">Online</span>
-                </div> -->
+                <!-- Device items -->
             </div>
         </div>
 
@@ -34,8 +40,8 @@
 
     <!-- BOTTOM -->
     <div id="controls">
-        <button id="pauseBtn">Pause</button>
-        <button id="sendFileBtn">Send File</button>
+        <button id="pauseBtn">Pause Monitoring</button>
+        <button id="sendFileBtn">Share New File</button>
     </div>
 
     <script src="renderer.js"></script>

@@ -8,7 +8,7 @@ import { addLog } from "./store/clipboard";
 import * as Sharing from "expo-sharing";
 import * as Device from "expo-device";
 
-let socket;
+export let socket;
 
 const SocketManager = () => {
   const dispatch = useDispatch();

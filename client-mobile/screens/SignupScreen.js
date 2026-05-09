@@ -8,43 +8,50 @@ import {
   Alert,
   Dimensions,
   SafeAreaView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 const { width, height } = Dimensions.get("window");
 
 const SignupScreen = ({ navigation }) => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
-  const [confirmPasswordFocused, setConfirmPasswordFocused] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
 
   const onSignupPress = async () => {
-    if (email && password && confirmPassword) {
+    if (name && email && password && confirmPassword) {
       if (password === confirmPassword) {
         try {
           const response = await fetch(
-            "http://192.168.1.14:3000/api/auth/signup",
+            "http://192.168.0.106:3000/api/auth/signup",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password }),
-            }
+              body: JSON.stringify({ name, email, password }),
+            },
           );
 
+          const data = await response.json();
+
           if (!response.ok) {
-            const errorText = await response.text();
-            Alert.alert("Signup Failed", errorText || "Server error.");
+            Alert.alert("Signup Failed", data.message || "Server error.");
             return;
           }
 
-          const data = await response.json();
-          Alert.alert("Success", "Account created successfully!");
-          // navigation.navigate("Home");
+          Alert.alert(
+            "Success",
+            data.message || "Account created successfully!",
+          );
+          navigation.navigate("Login");
         } catch (err) {
-          Alert.alert("Error", "Something went wrong.");
+          Alert.alert(
+            "Error",
+            "Something went wrong. Please check your connection.",
+          );
         }
       } else {
         Alert.alert("Error", "Passwords do not match");
@@ -55,142 +62,165 @@ const SignupScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <LinearGradient
-        colors={["#FFB300", "#FF9800", "#F57C00"]}
-        style={styles.container}
-      >
-        {/* Floating Elements */}
-        <View style={styles.floatingElements}>
-          <View style={[styles.floatingShape, styles.shape1]} />
-          <View style={[styles.floatingShape, styles.shape2]} />
-          <View style={[styles.floatingShape, styles.shape3]} />
-          <View style={[styles.floatingShape, styles.shape4]} />
-        </View>
-
-        <View style={styles.content}>
-          {/* Header */}
-          <View style={styles.brandSection}>
-            <View style={styles.logoContainer}>
-              <Text style={styles.logoText}>⚡</Text>
-            </View>
-            <Text style={styles.brandName}>Join ClipWave</Text>
-            <Text style={styles.brandTagline}>Share files seamlessly</Text>
+    <LinearGradient
+      colors={["#FFB300", "#FF9800", "#F57C00"]}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="always"
+        >
+          {/* Background - PointerEvents="none" ensures it doesn't block taps */}
+          <View style={styles.floatingElements} pointerEvents="none">
+            <View style={[styles.floatingShape, styles.shape1]} />
+            <View style={[styles.floatingShape, styles.shape2]} />
+            <View style={[styles.floatingShape, styles.shape3]} />
+            <View style={[styles.floatingShape, styles.shape4]} />
           </View>
 
-          {/* Signup Form */}
-          <View style={styles.formCard}>
-            <Text style={styles.formTitle}>Create Account</Text>
+          <View style={styles.content}>
+            {/* Header */}
+            <View style={styles.brandSection}>
+              <View style={styles.logoContainer}>
+                <Text style={styles.logoText}>⚡</Text>
+              </View>
+              <Text style={styles.brandName}>Join ClipWave</Text>
+              <Text style={styles.brandTagline}>Share files seamlessly</Text>
+            </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email Address</Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  emailFocused && styles.inputWrapperFocused,
-                ]}
+            {/* Signup Form */}
+            <View style={styles.formCard}>
+              <Text style={styles.formTitle}>Create Account</Text>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Full Name</Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    focusedField === "name" && styles.inputFocused,
+                  ]}
+                >
+                  <Text style={styles.inputIcon}>👤</Text>
+                  <TextInput
+                    value={name}
+                    onChangeText={setName}
+                    placeholder="Enter your full name"
+                    placeholderTextColor="#9CA3AF"
+                    style={styles.input}
+                    onFocus={() => setFocusedField("name")}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Email Address</Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    focusedField === "email" && styles.inputFocused,
+                  ]}
+                >
+                  <Text style={styles.inputIcon}>✉️</Text>
+                  <TextInput
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="Enter your email"
+                    placeholderTextColor="#9CA3AF"
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    style={styles.input}
+                    onFocus={() => setFocusedField("email")}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Password</Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    focusedField === "password" && styles.inputFocused,
+                  ]}
+                >
+                  <Text style={styles.inputIcon}>🔒</Text>
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="Create password"
+                    placeholderTextColor="#9CA3AF"
+                    secureTextEntry
+                    style={styles.input}
+                    onFocus={() => setFocusedField("password")}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Confirm Password</Text>
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    focusedField === "confirm" && styles.inputFocused,
+                  ]}
+                >
+                  <Text style={styles.inputIcon}>🔐</Text>
+                  <TextInput
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    placeholder="Confirm your password"
+                    placeholderTextColor="#9CA3AF"
+                    secureTextEntry
+                    style={styles.input}
+                    onFocus={() => setFocusedField("confirm")}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.signupButton}
+                onPress={onSignupPress}
               >
-                <Text style={styles.inputIcon}>✉️</Text>
-                <TextInput
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="Enter your email"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="email-address"
-                  style={styles.input}
-                  onFocus={() => setEmailFocused(true)}
-                  onBlur={() => setEmailFocused(false)}
-                />
+                <LinearGradient
+                  colors={["#FFB300", "#FF8F00"]}
+                  style={styles.buttonGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Text style={styles.buttonText}>Create Account</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <View style={styles.termsContainer}>
+                <Text style={styles.termsText}>
+                  By signing up, you agree to our Terms of Service and Privacy
+                  Policy
+                </Text>
               </View>
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Password</Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  passwordFocused && styles.inputWrapperFocused,
-                ]}
-              >
-                <Text style={styles.inputIcon}>🔒</Text>
-                <TextInput
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="Create password"
-                  placeholderTextColor="#9CA3AF"
-                  secureTextEntry
-                  style={styles.input}
-                  onFocus={() => setPasswordFocused(true)}
-                  onBlur={() => setPasswordFocused(false)}
-                />
-              </View>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Confirm Password</Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  confirmPasswordFocused && styles.inputWrapperFocused,
-                ]}
-              >
-                <Text style={styles.inputIcon}>🔐</Text>
-                <TextInput
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholder="Confirm your password"
-                  placeholderTextColor="#9CA3AF"
-                  secureTextEntry
-                  style={styles.input}
-                  onFocus={() => setConfirmPasswordFocused(true)}
-                  onBlur={() => setConfirmPasswordFocused(false)}
-                />
-              </View>
-            </View>
-
-            <TouchableOpacity
-              style={styles.signupButton}
-              onPress={onSignupPress}
-            >
-              <LinearGradient
-                colors={["#FFB300", "#FF8F00"]}
-                style={styles.buttonGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Text style={styles.buttonText}>Create Account</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <View style={styles.termsContainer}>
-              <Text style={styles.termsText}>
-                By signing up, you agree to our Terms of Service and Privacy
-                Policy
-              </Text>
+            {/* Footer */}
+            <View style={styles.footer}>
+              <Text style={styles.footerQuestion}>Already have an account?</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+                <Text style={styles.footerLink}>Sign In</Text>
+              </TouchableOpacity>
             </View>
           </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={styles.footerQuestion}>Already have an account?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-              <Text style={styles.footerLink}>Sign In</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </LinearGradient>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   floatingElements: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
+    ...StyleSheet.absoluteFillObject,
+    zIndex: -1,
   },
   floatingShape: {
     position: "absolute",
@@ -231,15 +261,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     paddingHorizontal: 24,
+    paddingVertical: 40,
   },
   brandSection: {
     alignItems: "center",
-    marginBottom: 40,
+    marginBottom: 20,
   },
   logoContainer: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: "rgba(255, 255, 255, 0.25)",
     justifyContent: "center",
     alignItems: "center",
@@ -248,17 +279,14 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255, 255, 255, 0.5)",
   },
   logoText: {
-    fontSize: 42,
+    fontSize: 40,
   },
   brandName: {
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: "bold",
     color: "#FFF8E1",
     letterSpacing: 1.5,
     marginBottom: 6,
-    textShadowColor: "rgba(0, 0, 0, 0.3)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
   },
   brandTagline: {
     fontSize: 16,
@@ -269,24 +297,18 @@ const styles = StyleSheet.create({
   formCard: {
     backgroundColor: "rgba(255, 255, 255, 0.96)",
     borderRadius: 28,
-    padding: 30,
-    shadowColor: "#FFB300",
-    shadowOffset: { width: 0, height: 15 },
-    shadowOpacity: 0.4,
-    shadowRadius: 25,
-    elevation: 20,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.6)",
+    padding: 25,
+    elevation: 4,
   },
   formTitle: {
     fontSize: 26,
     fontWeight: "bold",
     color: "#3E2723",
     textAlign: "center",
-    marginBottom: 28,
+    marginBottom: 24,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 14,
   },
   label: {
     fontSize: 14,
@@ -303,16 +325,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#FFE0B2",
     paddingHorizontal: 16,
-    paddingVertical: 4,
+    height: 50,
+    justifyContent: "center",
   },
-  inputWrapperFocused: {
+  inputFocused: {
     borderColor: "#FFA000",
     backgroundColor: "#FFFFFF",
-    shadowColor: "#FFC107",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 6,
   },
   inputIcon: {
     fontSize: 20,
@@ -322,16 +340,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: "#3E2723",
-    paddingVertical: 14,
+    height: "100%",
   },
   signupButton: {
-    marginTop: 12,
+    marginTop: 10,
     borderRadius: 16,
-    shadowColor: "#FF9800",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 10,
   },
   buttonGradient: {
     paddingVertical: 18,
@@ -358,7 +371,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 32,
+    marginTop: 30,
+    paddingBottom: 20,
   },
   footerQuestion: {
     color: "rgba(255, 255, 255, 0.9)",

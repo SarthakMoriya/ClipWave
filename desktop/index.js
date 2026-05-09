@@ -1,8 +1,8 @@
-const readApk = require("./readApk");
-const { app, clipboard } = require("electron");
+const { app, clipboard, dialog, ipcMain, BrowserWindow } = require("electron");
 const { io } = require("socket.io-client");
 const { Worker } = require("worker_threads");
-const { BrowserWindow } = require("electron");
+const fs = require("fs");
+const path = require("path");
 
 const utils = require("./utils");
 
@@ -115,6 +115,14 @@ async function establishSocketConnection() {
     });
   });
 
+  socket.on("new-apk-available", (data) => {
+    console.log("📦 New file available from another device:", data);
+    mainWindow.webContents.send("activity", {
+      type: "new-file",
+      data: data,
+    });
+  });
+
   socket.on("device-info", (data) => {
     console.log("Device info received:", data);
     devices.push({ ...data });
@@ -195,3 +203,68 @@ app.whenReady().then(() => {
   initApkWorker();
   establishSocketConnection();
 });
+
+// 🔹 IPC LISTENERS
+ipcMain.on("open-file-dialog", async (event) => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ["openFile"],
+  });
+
+  if (!result.canceled && result.filePaths.length > 0) {
+    const filePath = result.filePaths[0];
+    sendFile(filePath);
+  }
+});
+
+function sendFile(filePath) {
+  try {
+    const fileName = path.basename(filePath);
+    const fileBuff = fs.readFileSync(filePath);
+    const ext = path.extname(fileName).toLowerCase();
+    
+    const mimeType =
+      ext === ".mp4" ? "video/mp4" : 
+      ext === ".apk" ? "application/vnd.android.package-archive" : 
+      ext === ".jpg" || ext === ".jpeg" ? "image/jpeg" :
+      ext === ".png" ? "image/png" :
+      ext === ".pdf" ? "application/pdf" :
+      "application/octet-stream";
+
+    console.log(`🚀 Manually sending file: ${fileName}`);
+
+    // Split into 256 KB chunks
+    const CHUNK_SIZE = 256 * 1024;
+    const totalChunks = Math.ceil(fileBuff.length / CHUNK_SIZE);
+
+    for (let i = 0; i < totalChunks; i++) {
+      const chunk = fileBuff.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+      socket.emit("clipboard-apk-chunk", {
+        fileName: fileName,
+        mimeType: mimeType,
+        index: i,
+        total: totalChunks,
+        data: chunk.toString("base64"),
+      });
+
+      // Send progress to renderer
+      mainWindow.webContents.send("progress", {
+        fileName: fileName,
+        progress: Math.round(((i + 1) / totalChunks) * 100),
+      });
+    }
+
+    socket.emit("clipboard-apk-complete", {
+      fileName: fileName,
+      mimeType: mimeType,
+    });
+
+    // Notify local renderer
+    mainWindow.webContents.send("activity", {
+      type: "apk-complete",
+      fileName: fileName,
+    });
+
+  } catch (error) {
+    console.error("Failed to send file:", error);
+  }
+}

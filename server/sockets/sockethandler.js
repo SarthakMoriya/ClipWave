@@ -54,6 +54,18 @@ module.exports = (io) => {
         mimeType,
       });
     });
+    
+    // Handle file upload notification from mobile
+    socket.on("file-uploaded", (data) => {
+      console.log("File uploaded notification received:", data.name);
+      // Broadcast to all other clients
+      socket.broadcast.emit("new-apk-available", {
+        fileName: data.name,
+        name: data.name,
+        url: data.url,
+        mimeType: data.mimeType,
+      });
+    });
 
     // Add authentication middleware for sockets if needed
     socket.on("authenticate", (token) => {
