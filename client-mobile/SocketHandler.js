@@ -27,7 +27,7 @@ const SocketManager = () => {
       dispatch(addLog({ payload: data, type: 1 }));
     });
     socket.on("clipboard-img", (data) => {
-      console.log("COPIED IMAGE RECEIVED", data);
+      console.log("COPIED IMAGE RECEIVED");
       dispatch(addLog({ payload: data, type: 2 }));
     });
     socket.on("clipboard-url", (data) => {

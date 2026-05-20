@@ -3,6 +3,8 @@ const { io } = require("socket.io-client");
 const { Worker } = require("worker_threads");
 const fs = require("fs");
 const path = require("path");
+const http = require("http");
+const https = require("https");
 
 const utils = require("./utils");
 
@@ -163,6 +165,8 @@ function checkClipBoard() {
 
 function checkImage() {
   const currentImage = clipboard.readImage();
+  // console.log(currentImage);
+  // console.log("Image empty?", currentImage.isEmpty());
   if (!currentImage.isEmpty()) {
     const base64Image = currentImage.toDataURL();
     if (previousImgBase64 !== base64Image) {
@@ -213,6 +217,45 @@ ipcMain.on("open-file-dialog", async (event) => {
   if (!result.canceled && result.filePaths.length > 0) {
     const filePath = result.filePaths[0];
     sendFile(filePath);
+  }
+});
+
+ipcMain.on("download-file", async (event, { url, fileName }) => {
+  const { filePath } = await dialog.showSaveDialog(mainWindow, {
+    defaultPath: fileName,
+    title: "Save Shared Content",
+  });
+
+  if (filePath) {
+    try {
+      if (url.startsWith("data:")) {
+        // Handle base64 (for clipboard images)
+        const base64Data = url.split(";base64,").pop();
+        fs.writeFileSync(filePath, base64Data, { encoding: "base64" });
+        console.log(`✅ Saved base64 image to: ${filePath}`);
+      } else {
+        // Handle URL (for shared files/images from other devices)
+        const file = fs.createWriteStream(filePath);
+        const protocol = url.startsWith("https") ? https : http;
+
+        protocol.get(url, (response) => {
+          if (response.statusCode !== 200) {
+            console.error(`❌ Failed to download: ${response.statusCode}`);
+            return;
+          }
+          response.pipe(file);
+          file.on("finish", () => {
+            file.close();
+            console.log(`✅ Downloaded file to: ${filePath}`);
+          });
+        }).on("error", (err) => {
+          fs.unlink(filePath, () => {}); 
+          console.error(`❌ Download failed: ${err.message}`);
+        });
+      }
+    } catch (err) {
+      console.error(`❌ Error saving file: ${err.message}`);
+    }
   }
 });
 

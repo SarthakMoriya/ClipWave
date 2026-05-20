@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   isnavOpen: false,
-  ip: "192.168.0.106",
+  ip: "10.18.36.12",
 };
 
 export const extraSlice = createSlice({

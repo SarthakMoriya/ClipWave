@@ -24,6 +24,7 @@ const LoginScreen = ({ navigation }) => {
   const [focusedField, setFocusedField] = useState(null);
 
   const onLoginPress = async () => {
+    console.log(`IP IS :${ip}`)
     if (email && password) {
       try {
         const response = await fetch(`http://${ip}:3000/api/auth/login`, {

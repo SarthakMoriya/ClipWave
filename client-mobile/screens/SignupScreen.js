@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useSelector } from "react-redux";
 
 const { width, height } = Dimensions.get("window");
 
@@ -21,13 +22,14 @@ const SignupScreen = ({ navigation }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [focusedField, setFocusedField] = useState(null);
+  const ip=useSelector((state) => state.extra.ip);  
 
   const onSignupPress = async () => {
     if (name && email && password && confirmPassword) {
       if (password === confirmPassword) {
         try {
           const response = await fetch(
-            "http://192.168.0.106:3000/api/auth/signup",
+            `http://${ip}:3000/api/auth/signup`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

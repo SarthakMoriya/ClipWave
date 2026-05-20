@@ -27,7 +27,10 @@ ipcRenderer.on("activity", (_, item) => {
         contentHtml = `<div class="item-content">${item.data}</div>`;
     } else if (item.type === "image") {
         headerText = "IMAGE CLIPBOARD";
-        contentHtml = `<img src="${item.data}" />`;
+        contentHtml = `
+            <img src="${item.data}" />
+            <button class="download-btn" data-url="${item.data}" data-filename="clipboard_image_${Date.now()}.png">Download Image</button>
+        `;
     } else if (item.type === "url") {
         headerText = "LINK";
         contentHtml = `<div class="item-content"><a href="${item.data}" style="color: #F59E0B">${item.data}</a></div>`;
@@ -50,7 +53,10 @@ ipcRenderer.on("activity", (_, item) => {
             contentHtml = `
                 <div class="item-content">Shared an image:</div>
                 <img src="${item.data.url}" />
-                <div style="margin-top: 8px"><a href="${item.data.url}" class="file-action">Open Original</a></div>
+                <div class="file-actions-wrapper">
+                    <a href="${item.data.url}" class="file-action">Open Original</a>
+                    <button class="download-btn" data-url="${item.data.url}" data-filename="${item.data.name}">Download Image</button>
+                </div>
             `;
         } else {
             contentHtml = `
@@ -58,7 +64,10 @@ ipcRenderer.on("activity", (_, item) => {
                     <span class="file-icon">${isVideo ? "🎥" : "📄"}</span>
                     <div class="file-info">
                         <span class="file-name">${item.data.name}</span>
-                        <a href="${item.data.url}" target="_blank" class="file-action">Download File</a>
+                        <div class="file-actions-wrapper">
+                            <a href="${item.data.url}" target="_blank" class="file-action">Open in Browser</a>
+                            <button class="download-btn" data-url="${item.data.url}" data-filename="${item.data.name}">Save to PC</button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -105,4 +114,13 @@ ipcRenderer.on("progress", (_, data) => {
 // 🔹 SEND FILE BUTTON
 document.getElementById("sendFileBtn").addEventListener("click", () => {
     ipcRenderer.send("open-file-dialog");
+});
+
+// 🔹 DOWNLOAD HANDLER
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('download-btn')) {
+        const url = e.target.getAttribute('data-url');
+        const fileName = e.target.getAttribute('data-filename');
+        ipcRenderer.send("download-file", { url, fileName });
+    }
 });
