@@ -85,7 +85,13 @@ const SocketManager = () => {
       // checkClipBoard();
     }, 5000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (socket) {
+        socket.removeAllListeners();
+        socket.disconnect();
+      }
+    };
   }, []);
 
   return null; // This is a background component

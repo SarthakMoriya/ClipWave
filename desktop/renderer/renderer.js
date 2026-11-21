@@ -116,6 +116,11 @@ document.getElementById("sendFileBtn").addEventListener("click", () => {
     ipcRenderer.send("open-file-dialog");
 });
 
+// 🔹 CLEAR LOGS BUTTON
+document.getElementById("clearLogsBtn").addEventListener("click", () => {
+    feed.innerHTML = "";
+});
+
 // 🔹 DOWNLOAD HANDLER
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('download-btn')) {

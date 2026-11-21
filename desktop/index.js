@@ -67,6 +67,10 @@ async function establishSocketConnection() {
   socket.on("connect", () => {
     console.log("✅ Connected to Socket");
     mainWindow.webContents.send("status", "connected");
+    
+    // Force re-sync of clipboard on new connection/reconnection
+    previousClipboardContent = "";
+    previousImgBase64 = null;
   });
 
   socket.on("clipboard", (data) => {
@@ -127,7 +131,12 @@ async function establishSocketConnection() {
 
   socket.on("device-info", (data) => {
     console.log("Device info received:", data);
-    devices.push({ ...data });
+    const existingIndex = devices.findIndex(d => d.deviceName === data.deviceName);
+    if (existingIndex !== -1) {
+      devices[existingIndex] = { ...data };
+    } else {
+      devices.push({ ...data });
+    }
     mainWindow.webContents.send("device-list", {
       type: "device-info",
       data: devices,
@@ -153,14 +162,15 @@ function checkClipBoard() {
     if (checkForUrls(clipboardContent)) {
       console.log("🌍 Emitting URL:", clipboardContent);
       socket.emit("clipboard-url", clipboardContent);
-    } else {
+    } else if (clipboardContent.trim() !== "") {
       console.log("📋 Emitting text:", clipboardContent);
       socket.emit("clipboard", clipboardContent);
     }
     previousClipboardContent = clipboardContent;
-  } else {
-    checkImage();
   }
+  
+  // Always check image independently
+  checkImage();
 }
 
 function checkImage() {
@@ -200,6 +210,18 @@ function createWindow() {
   });
 
   mainWindow.loadFile("renderer/index.html");
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (socket && socket.connected) {
+      mainWindow.webContents.send("status", "connected");
+    } else {
+      mainWindow.webContents.send("status", "disconnected");
+    }
+    mainWindow.webContents.send("device-list", {
+      type: "device-info",
+      data: devices,
+    });
+  });
 }
 
 app.whenReady().then(() => {

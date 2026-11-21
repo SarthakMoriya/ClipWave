@@ -14,12 +14,16 @@ parentPort.on("message", () => {
     }
 
     const filePath = files[0];
+    const ext = path.extname(filePath).toLowerCase();
+    
+    // Skip image files here because checkImage() in index.js handles all image clipboards
+    const imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"];
+    if (imageExtensions.includes(ext)) {
+      return;
+    }
+
     console.log(`Copied File path::${filePath}`);
     if (filePath === lastFilePath) {
-      // parentPort.postMessage({
-      //   success: false,
-      //   error: "Same file/apk as last, skipping",
-      // });
       return;
     }
 

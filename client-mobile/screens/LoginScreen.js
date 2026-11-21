@@ -9,10 +9,12 @@ import {
   Platform,
   ScrollView,
   SafeAreaView,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 const { width, height } = Dimensions.get("window");
 
@@ -24,25 +26,38 @@ const LoginScreen = ({ navigation }) => {
   const [focusedField, setFocusedField] = useState(null);
 
   const onLoginPress = async () => {
-    console.log(`IP IS :${ip}`)
-    if (email && password) {
-      try {
-        const response = await fetch(`http://${ip}:3000/api/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
+    try {
+      console.log('hiiiiiiiii')
+      console.log(`IP IS :${ip}`);
+      if (email && password) {
+        try {
+          const response = await axios.post(`http://${ip}:3000/api/auth/login`, {
+            email,
+            password
+          });
 
-        const data = await response.json();
-        if (data.code === 200) {
-          await AsyncStorage.setItem("token", data.token);
-          navigation.navigate("Home");
+          console.log("Login response:", response.data);
+
+          if (response.data.code === 200) {
+            Alert.alert("Success", response.data.message || "Login successful");
+            await AsyncStorage.setItem("token", response.data.token);
+            navigation.navigate("Home");
+          }
+        } catch (err) {
+          console.log("Login Error:", err.response?.data || err.message);
+          if (err.response && err.response.data && err.response.data.message) {
+            Alert.alert("Login Failed", err.response.data.message);
+          } else {
+            Alert.alert("Error", "An error occurred during login. Please try again.");
+          }
         }
-      } catch (err) {
-        console.log("Error:", err);
+      } else {
+        console.log("Please fill in all fields");
+        Alert.alert("Required Fields", "Please fill in both email and password.");
       }
-    } else {
-      console.log("Please fill in all fields");
+    } catch (error) {
+      console.log("Unexpected error:", error);
+      Alert.alert("Error", "An unexpected error occurred.");
     }
   };
 
@@ -122,7 +137,10 @@ const LoginScreen = ({ navigation }) => {
               </View>
 
               {/* Login Button */}
-              <TouchableOpacity style={styles.loginButton} onPress={onLoginPress}>
+              <TouchableOpacity
+                style={styles.loginButton}
+                onPress={onLoginPress}
+              >
                 <LinearGradient
                   colors={["#FFB75E", "#ED8F03"]}
                   style={styles.buttonGradient}
@@ -133,7 +151,10 @@ const LoginScreen = ({ navigation }) => {
                 </LinearGradient>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate("ForgotPassword")}>
+              <TouchableOpacity
+                style={styles.forgotPassword}
+                onPress={() => navigation.navigate("ForgotPassword")}
+              >
                 <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
               </TouchableOpacity>
             </View>

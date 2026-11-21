@@ -10,12 +10,12 @@ require("dotenv").config();
 const app = express();
 const httpServer = createServer(app);
 
-// Configure Socket.io
 const io = new Server(httpServer, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
   },
+  maxHttpBufferSize: 1e8, // 100 MB
 });
 
 // Middleware

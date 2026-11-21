@@ -14,7 +14,11 @@ import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 
 const ImagesClipboard = ({ item }) => {
-  console.log(item)
+  console.log(item);
+
+  const imageUrl = typeof item.content === "string" ? item.content : item.content.url;
+  const imageName = typeof item.content === "string" ? "clipboard_image.png" : item.content.name;
+
   const saveImageToGallery = async (url, name) => {
     try {
       if (!url) {
@@ -30,18 +34,28 @@ const ImagesClipboard = ({ item }) => {
       }
 
       // ✅ Derive a valid file name and extension
-      const fileExtension = name?.split(".").pop() || "jpg";
+      const fileExtension = name?.split(".").pop() || "png";
       const safeName = name?.replace(/[^a-zA-Z0-9._-]/g, "_") || `image.${fileExtension}`;
       const fileUri = `${FileSystem.documentDirectory}${safeName}`;
 
-      console.log("⬇️ Downloading:", url);
-      console.log("📂 Saving as:", fileUri);
+      console.log("⬇️ Processing image:", safeName);
 
-      // ✅ Download file to app storage
-      const { uri } = await FileSystem.downloadAsync(url, fileUri);
+      let uriToSave = "";
+      if (url.startsWith("data:")) {
+        // Base64 image
+        const base64Data = url.split(",")[1];
+        await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        uriToSave = fileUri;
+      } else {
+        // ✅ Download file to app storage
+        const { uri } = await FileSystem.downloadAsync(url, fileUri);
+        uriToSave = uri;
+      }
 
       // ✅ Save downloaded file to gallery
-      const asset = await MediaLibrary.createAssetAsync(uri);
+      const asset = await MediaLibrary.createAssetAsync(uriToSave);
 
       // On Android 13+, the default album name might be ignored, so check platform
       const albumName = Platform.OS === "android" ? "Downloads" : "Download";
@@ -57,13 +71,13 @@ const ImagesClipboard = ({ item }) => {
   return (
     <View style={styles.imageContainer}>
       <Image
-        source={{ uri: item.content.url }}
+        source={{ uri: imageUrl }}
         style={styles.imageContent}
         resizeMode="cover"
       />
       <TouchableOpacity
         style={styles.downloadButton}
-        onPress={() => saveImageToGallery(item.content.url, item.content.name)}
+        onPress={() => saveImageToGallery(imageUrl, imageName)}
       >
         <LinearGradient
           colors={["#4facfe", "#00f2fe"]}

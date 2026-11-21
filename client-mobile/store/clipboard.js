@@ -10,10 +10,19 @@ export const logSlice = createSlice({
   initialState,
   reducers: {
     addLog: (state, { payload }) => {
-      console.log(state.log)
-      console.log(payload)
-      if (payload.payload)
+      console.log(state.log);
+      console.log(payload);
+      if (payload.payload) {
+        const lastLog = state.log[state.log.length - 1];
+        if (
+          lastLog &&
+          lastLog.type === payload.type &&
+          JSON.stringify(lastLog.content) === JSON.stringify(payload.payload)
+        ) {
+          return;
+        }
         state.log.push({ content: payload.payload, type: payload.type });
+      }
     },
     removeLog: (state, payload) => {
       state.log = state.log.filter((log) => log.id !== payload);
